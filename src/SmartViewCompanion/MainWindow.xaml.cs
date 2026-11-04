@@ -42,7 +42,8 @@ public partial class MainWindow : Window
         }
 
         _provider = new GdiBitBltCaptureProvider();
-        var availability = await _provider.CheckAvailabilityAsync();
+        var provider = _provider;
+        var availability = await provider.CheckAvailabilityAsync();
         if (!availability.IsAvailable)
         {
             StatusText.Text = availability.Message;
@@ -77,13 +78,12 @@ public partial class MainWindow : Window
         StartButton.IsEnabled = false;
 
         var token = _previewCts.Token;
-        _previewTask = Task.Run(() => PreviewLoopAsync(outputWidth, outputHeight, targetFps, zoom, token));
+        PreviewPlaceholder.Visibility = Visibility.Collapsed;
+        _previewTask = Task.Run(() => PreviewLoopAsync(provider, outputWidth, outputHeight, targetFps, zoom, token));
     }
 
-    private async Task PreviewLoopAsync(int outputWidth, int outputHeight, int targetFps, double zoom, CancellationToken token)
+    private async Task PreviewLoopAsync(GdiBitBltCaptureProvider provider, int outputWidth, int outputHeight, int targetFps, double zoom, CancellationToken token)
     {
-        if (_provider is null)
-            return;
 
         TimeSpan interval = TimeSpan.FromMilliseconds(1000.0 / targetFps);
         Rect screen = GdiBitBltCaptureProvider.GetPrimaryScreenBounds();
@@ -98,11 +98,12 @@ public partial class MainWindow : Window
             while (!token.IsCancellationRequested)
             {
                 var frameStarted = Stopwatch.GetTimestamp();
-                BitmapSource? frame = await _provider.CaptureAsync(region, token);
+                BitmapSource? frame = await provider.CaptureAsync(region, token);
                 if (frame is not null)
                 {
                     await Dispatcher.InvokeAsync(() =>
                     {
+                        if (token.IsCancellationRequested) return;
                         PreviewImage.Source = frame;
                         _frameCount++;
                         if (_fpsClock.ElapsedMilliseconds >= 1000)
@@ -145,6 +146,7 @@ public partial class MainWindow : Window
         }
 
         PreviewImage.Source = null;
+        PreviewPlaceholder.Visibility = Visibility.Visible;
         CaptureInfoText.Text = "Capture: stopped";
         FpsInfoText.Text = "FPS: —";
         StartButton.IsEnabled = true;
