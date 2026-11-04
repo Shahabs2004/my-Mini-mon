@@ -40,6 +40,13 @@ public static class ScreenGeometry
 
     public static Rect CalculateCrop(Rect source, int outputWidth, int outputHeight, double zoom, Point? requestedCenter)
     {
+        if (source.IsEmpty || source.Width <= 0 || source.Height <= 0)
+            throw new ArgumentOutOfRangeException(nameof(source));
+        if (outputWidth <= 0 || outputHeight <= 0)
+            throw new ArgumentOutOfRangeException(nameof(outputWidth), "Output dimensions must be positive.");
+        if (!double.IsFinite(zoom) || zoom <= 0)
+            throw new ArgumentOutOfRangeException(nameof(zoom), "Zoom must be finite and positive.");
+
         double aspect = (double)outputWidth / outputHeight;
         double width = source.Width;
         double height = source.Height;
