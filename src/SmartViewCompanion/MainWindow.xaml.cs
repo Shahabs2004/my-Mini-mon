@@ -16,6 +16,7 @@ public partial class MainWindow : Window
     private Rect? _selectedRegion;
     private long _frameCount;
     private readonly Stopwatch _fpsClock = Stopwatch.StartNew();
+    private bool _isClosing;
 
     private const uint WdaExcludeFromCapture = 0x00000011;
 
@@ -23,7 +24,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         SourceInitialized += (_, _) => TryExcludeWindowFromCapture();
-        Closing += (_, _) => StopPreview();
+        Closing += MainWindow_Closing;
     }
 
     private void TryExcludeWindowFromCapture()
@@ -42,9 +43,20 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (_isClosing)
+            return;
+
+        e.Cancel = true;
+        _isClosing = true;
+        await StopPreviewAsync();
+        Close();
+    }
+
     private async void SelectRegionButton_Click(object sender, RoutedEventArgs e)
     {
-        StopPreview();
+        await StopPreviewAsync();
         Hide();
         await Task.Delay(180);
 
@@ -72,7 +84,8 @@ public partial class MainWindow : Window
 
     private async void StartButton_Click(object sender, RoutedEventArgs e)
     {
-        StopPreview();
+        await StopPreviewAsync();
+        StartButton.IsEnabled = false;
 
         int captureIndex = CaptureMethodBox.SelectedIndex;
         int trackingIndex = TrackingModeBox.SelectedIndex;
@@ -82,6 +95,7 @@ public partial class MainWindow : Window
             StatusText.Text = captureIndex == 1
                 ? "Windows Graphics Capture is not implemented yet. Choose Automatic or GDI BitBlt."
                 : "DXGI Desktop Duplication is not implemented yet. Choose Automatic or GDI BitBlt.";
+            StartButton.IsEnabled = true;
             return;
         }
 
@@ -93,6 +107,7 @@ public partial class MainWindow : Window
             StatusText.Text = availability.Message;
             await provider.DisposeAsync();
             _provider = null;
+            StartButton.IsEnabled = true;
             return;
         }
 
@@ -283,25 +298,55 @@ public partial class MainWindow : Window
         }
     }
 
-    private void StopButton_Click(object sender, RoutedEventArgs e) => StopPreview();
-
-    private void StopPreview()
+    private async void StopButton_Click(object sender, RoutedEventArgs e)
     {
-        _previewCts?.Cancel();
-        _previewCts?.Dispose();
-        _previewCts = null;
+        await StopPreviewAsync();
+    }
 
-        if (_provider is not null)
+    /// <summary>
+    /// Stops the capture loop before disposing its provider. Awaiting the loop
+    /// prevents overlapping sessions and resource disposal while a frame is in flight.
+    /// </summary>
+    private async Task StopPreviewAsync()
+    {
+        CancellationTokenSource? cts = _previewCts;
+        Task? previewTask = _previewTask;
+        IFrameCaptureProvider? provider = _provider;
+
+        _previewCts = null;
+        _previewTask = null;
+        _provider = null;
+
+        cts?.Cancel();
+
+        if (previewTask is not null)
         {
-            _ = _provider.DisposeAsync();
-            _provider = null;
+            try
+            {
+                await previewTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected during shutdown.
+            }
+            catch (Exception)
+            {
+                // The preview loop reports runtime errors to the status area.
+            }
         }
+
+        if (provider is not null)
+            await provider.DisposeAsync();
+
+        cts?.Dispose();
 
         PreviewImage.Source = null;
         PreviewPlaceholder.Visibility = Visibility.Visible;
         CaptureInfoText.Text = "Capture: stopped";
         FpsInfoText.Text = "FPS: —";
-        StartButton.IsEnabled = true;
+
+        if (!_isClosing)
+            StartButton.IsEnabled = true;
     }
 
     private static Point? GetCursorPosition()
