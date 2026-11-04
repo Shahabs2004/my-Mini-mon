@@ -4,6 +4,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartViewCompanion", "src\SmartViewCompanion\SmartViewCompanion.csproj", "{E9B5D42A-6E9F-4C0C-9F08-1E9E5E4E8D01}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartViewCompanion.Tests", "tests\SmartViewCompanion.Tests\SmartViewCompanion.Tests.csproj", "{D14B7B1C-97C2-4B90-9B36-65B63A5C11A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,5 +16,9 @@ Global
 		{E9B5D42A-6E9F-4C0C-9F08-1E9E5E4E8D01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9B5D42A-6E9F-4C0C-9F08-1E9E5E4E8D01}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9B5D42A-6E9F-4C0C-9F08-1E9E5E4E8D01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D14B7B1C-97C2-4B90-9B36-65B63A5C11A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D14B7B1C-97C2-4B90-9B36-65B63A5C11A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D14B7B1C-97C2-4B90-9B36-65B63A5C11A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D14B7B1C-97C2-4B90-9B36-65B63A5C11A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
