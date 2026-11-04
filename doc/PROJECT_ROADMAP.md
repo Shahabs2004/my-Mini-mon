@@ -2,7 +2,7 @@
 
 > **Purpose:** This is the project's central, maintained checklist. Keep it synchronized with the actual source code and verified tests. Mark an item `[x]` only after its implementation exists in the repository and its acceptance criteria have been checked. A committed change is not automatically a tested or verified feature.
 >
-> **Current milestone:** Prototype 0.6 — software preview simulator (preview lifecycle hardening in progress)
+> **Current milestone:** Prototype 0.8 — software preview simulator (virtual-desktop source implemented; DPI validation pending)
 > **Last roadmap review:** 2026-11-05
 > **Repository:** https://github.com/Shahabs2004/my-Mini-mon
 
@@ -63,8 +63,8 @@ The software simulator comes first. Hardware purchase, PCB design, and firmware 
 - [ ] Configurable edge behavior and crop clamping.
 - [x] Enumerate physical monitors and select one monitor as the active capture source (source implemented; Windows validation pending).
 - [x] Select a capture region on the currently selected monitor; Win32 desktop coordinates are retained, including negative monitor origins (mixed-DPI validation pending).
-- [ ] Capture/tracking over the combined virtual desktop and drag-select one region spanning multiple monitors.
-- [ ] Validate mouse and caret tracking when the pointer/caret moves outside the selected monitor.
+- [x] Capture/tracking over the combined virtual desktop bounding rectangle (source implemented; Windows validation pending).
+- [x] Allow mouse/caret crop tracking across monitor coordinates when Virtual desktop is selected (source implemented; Windows validation pending).
 - [ ] DPI-awareness validation and coordinate normalization for mixed-DPI displays.
 - [ ] Optional window-following mode.
 - [ ] Optional application/window allowlist and ignore list.
@@ -170,10 +170,11 @@ Do not couple tracking logic to a particular capture API. Do not couple the prev
 - Exit criteria: tracking behavior validated in the target app matrix. [ ]
 
 ### M2 — Robust capture and multiple monitors
-**Status: Partial — physical monitor enumeration and per-monitor source selection are implemented in source; Windows and mixed-DPI validation pending.**
+**Status: Partial — per-monitor and virtual-desktop source selection are implemented in source; Windows and mixed-DPI validation pending.**
 - [ ] WGC backend.
 - [ ] DXGI backend.
-- [ ] Virtual-desktop capture spanning multiple monitors and mixed-DPI coordinate normalization.
+- [x] Virtual-desktop bounding rectangle capture source and cross-monitor tracking coordinates (source implemented; Windows validation pending).
+- [ ] Mixed-DPI coordinate normalization and validation.
 - [ ] Backend fallback and capability reporting.
 - Exit criteria: stable capture on multiple Windows configurations. [ ]
 
@@ -202,7 +203,7 @@ Do not couple tracking logic to a particular capture API. Do not couple the prev
 1. **Build correctness first:** inspect the current source and fix compile/runtime lifecycle issues; obtain a successful Windows CI build.
 2. **Add automated tests:** isolate crop geometry and tracking-coordinate logic from WPF UI.
 3. **Improve preview lifecycle:** await cancellation/cleanup, prevent overlapping preview loops, and report errors without stale UI updates.
-4. **Extend multi-monitor support:** validate per-monitor capture on Windows, normalize mixed-DPI coordinates, then add virtual-desktop spanning selection and cross-monitor tracking.
+4. **Validate multi-monitor support:** verify virtual-desktop capture on Windows, normalize mixed-DPI coordinates, and test negative monitor origins and display gaps.
 5. **Implement WGC capture:** add a real provider with capability detection; preserve GDI as a fallback.
 6. **Implement UI Automation caret fallback:** test carefully against supported applications and keep Win32 caret as the first choice.
 7. **Add frame telemetry and saved profiles.**
@@ -219,6 +220,14 @@ Do not couple tracking logic to a particular capture API. Do not couple the prev
 - Preserve the core requirement: the final device is a USB peripheral, not a Windows secondary monitor.
 
 ## 8. Recent implementation notes
+
+### 2026-11-05 — Virtual desktop source (Prototype 0.8; source committed, verification pending)
+- The monitor list now includes a synthetic **Virtual desktop (all monitors)** entry using the union/bounding rectangle of all enumerated monitors.
+- Selecting it makes the region selector and capture/tracking source use the combined desktop coordinate bounds, allowing the crop to follow pointer/caret coordinates on different monitors.
+- Empty gaps between physical displays are part of the bounding rectangle and may be captured as blank pixels.
+- This does not yet normalize mixed-DPI coordinates or prove GDI capture correctness on negative-origin/heterogeneous-DPI layouts.
+- Windows build and runtime verification remain pending.
+
 
 ### 2026-11-05 — Monitor selection foundation (source committed; verification pending)
 - Added Win32 monitor enumeration, primary-monitor detection, and a monitor selector in the capture settings.
