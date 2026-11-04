@@ -7,9 +7,9 @@ A Windows companion application for a future USB-powered auxiliary display. The 
 See [doc/PROJECT_ROADMAP.md](doc/PROJECT_ROADMAP.md) for the full feature checklist, milestone status, known limitations, and development order.
 
 
-**Prototype 0.6 / early development.** The app includes a GDI BitBlt capture provider, live preview, drag-to-select fixed capture rectangle, mouse-pointer tracking, basic Win32 text-caret tracking, and a simple automatic mode (caret-first with mouse fallback). Caret tracking uses the foreground GUI thread's `GetGUIThreadInfo` caret rectangle and converts it to desktop coordinates. It works only when the target application exposes a standard Win32 caret; some applications (including some custom-rendered editors, browsers, and elevated apps) may not expose usable caret information. When no caret is found, the preview remains at the last known position (or the primary-screen center before the first successful detection).
+**Prototype 0.7 / early development.** The app includes a GDI BitBlt capture provider, live preview, drag-to-select fixed capture rectangle, mouse-pointer tracking, basic Win32 text-caret tracking, and a simple automatic mode (caret-first with mouse fallback). Caret tracking uses the foreground GUI thread's `GetGUIThreadInfo` caret rectangle and converts it to desktop coordinates. It works only when the target application exposes a standard Win32 caret; some applications (including some custom-rendered editors, browsers, and elevated apps) may not expose usable caret information. When no caret is found, the preview remains at the last known position (or the primary-screen center before the first successful detection).
 
-Automatic capture currently selects GDI BitBlt because it is the only implemented backend. Windows Graphics Capture, DXGI Desktop Duplication, multi-monitor tracking, and UI Automation caret fallback are not implemented yet.
+Automatic capture currently selects GDI BitBlt because it is the only implemented backend. A Win32 monitor selector now lets the user choose one physical monitor as the capture source; capture and tracking are bounded to that selected monitor. Windows Graphics Capture, DXGI Desktop Duplication, virtual-desktop spanning capture, mixed-DPI normalization, and UI Automation caret fallback are not implemented yet.
 
 ## Goals
 
@@ -33,8 +33,8 @@ dotnet build .\SmartViewCompanion.sln --configuration Release
 
 ## Current limitations
 
-- Capture and tracking currently use the **primary display** only.
-- The region selector is limited to the primary display.
+- Capture and tracking currently use one selected physical monitor at a time; the primary monitor is selected by default.
+- Region selection is scoped to the selected monitor. Mixed-DPI positioning and selections spanning multiple monitors still require implementation and Windows validation.
 - Caret tracking is based on the standard Win32 GUI caret. It is not a universal text-caret detector and does not yet use UI Automation.
 - GDI BitBlt may fail to capture protected content, hardware overlays, or some accelerated surfaces.
 - `WDA_EXCLUDEFROMCAPTURE` is requested for the app window as a best-effort measure; actual exclusion must be verified on the target Windows version and capture path.
@@ -59,7 +59,8 @@ dotnet build .\SmartViewCompanion.sln --configuration Release
 - [ ] UI Automation caret fallback where feasible
 - [ ] Windows Graphics Capture provider
 - [ ] DXGI Desktop Duplication provider
-- [ ] Multi-monitor selection and tracking
+- [x] Per-monitor enumeration and selection (initial source implementation; Windows validation pending)
+- [ ] Virtual-desktop spanning selection, cross-monitor tracking, and mixed-DPI support
 - [ ] Performance telemetry and saved profiles
 - [ ] USB device protocol simulator
 - [ ] Hardware/firmware integration and physical-device testing
