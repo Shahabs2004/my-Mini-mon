@@ -19,7 +19,7 @@ public static class DisplayMonitorService
         var monitors = new List<DisplayMonitorInfo>();
         MonitorEnumProc callback = (handle, _, _, _) =>
         {
-            var info = new MonitorInfoEx { Size = Marshal.SizeOf<MonitorInfoEx>() };
+            var info = new MonitorInfoEx { Size = Marshal.SizeOf<MonitorInfoEx>(), DeviceName = string.Empty };
             if (GetMonitorInfo(handle, ref info))
             {
                 var bounds = new Rect(
