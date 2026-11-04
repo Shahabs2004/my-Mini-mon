@@ -248,6 +248,7 @@ Do not couple tracking logic to a particular capture API. Do not couple the prev
 
 ### 2026-11-05 — Preview lifecycle hardening (source committed; verification pending)
 - Capture shutdown now cancels and awaits the active preview task before disposing the provider.
+- A capture-loop exception now restores the Start control so the user can retry after stopping/cleaning the failed session.
 - Start/stop and region-selection flows await the previous preview session, preventing overlapping capture loops.
 - Window closing now waits for preview cleanup before closing.
 - Capture-backend initialization exceptions are reported in the status area and the Start control is restored.
