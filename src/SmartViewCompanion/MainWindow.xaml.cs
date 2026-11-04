@@ -85,12 +85,6 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (trackingIndex == 3)
-        {
-            StatusText.Text = "Automatic tracking is not implemented yet. Choose Fixed region, Mouse pointer, or Text caret.";
-            return;
-        }
-
         _provider = new GdiBitBltCaptureProvider();
         var provider = _provider;
         var availability = await provider.CheckAvailabilityAsync();
@@ -120,7 +114,8 @@ public partial class MainWindow : Window
 
         bool trackMouse = trackingIndex == 1;
         bool trackCaret = trackingIndex == 2;
-        Rect sourceRegion = trackMouse || trackCaret
+        bool trackAutomatic = trackingIndex == 3;
+        Rect sourceRegion = trackMouse || trackCaret || trackAutomatic
             ? GdiBitBltCaptureProvider.GetPrimaryScreenBounds()
             : (_selectedRegion ?? GetDefaultRegion(outputWidth, outputHeight));
         Rect captureRegion = CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, null);
@@ -133,6 +128,7 @@ public partial class MainWindow : Window
         {
             1 => $"Mouse tracking active: {outputWidth} × {outputHeight} at {targetFps} FPS.",
             2 => $"Text-caret tracking active: {outputWidth} × {outputHeight} at {targetFps} FPS. Some apps do not expose a Win32 caret.",
+            3 => $"Automatic tracking active (caret first, mouse fallback): {outputWidth} × {outputHeight} at {targetFps} FPS.",
             _ => $"Fixed region active: {outputWidth} × {outputHeight} at {targetFps} FPS."
         };
         StartButton.IsEnabled = false;
@@ -141,7 +137,7 @@ public partial class MainWindow : Window
         var token = _previewCts.Token;
         _previewTask = Task.Run(() => PreviewLoopAsync(
             provider, sourceRegion, captureRegion, outputWidth, outputHeight,
-            targetFps, zoom, trackMouse, trackCaret, token));
+            targetFps, zoom, trackMouse, trackCaret, trackAutomatic, token));
     }
 
     private static Rect GetDefaultRegion(int outputWidth, int outputHeight)
@@ -193,7 +189,7 @@ public partial class MainWindow : Window
     private async Task PreviewLoopAsync(
         GdiBitBltCaptureProvider provider, Rect sourceRegion, Rect fixedCaptureRegion,
         int outputWidth, int outputHeight, int targetFps, double zoom,
-        bool trackMouse, bool trackCaret, CancellationToken token)
+        bool trackMouse, bool trackCaret, bool trackAutomatic, CancellationToken token)
     {
         TimeSpan interval = TimeSpan.FromMilliseconds(1000.0 / targetFps);
         Point lastCaretPosition = new(
@@ -210,7 +206,7 @@ public partial class MainWindow : Window
 
                 if (trackMouse)
                     trackingPoint = GetCursorPosition();
-                else if (trackCaret)
+                else if (trackCaret || trackAutomatic)
                 {
                     trackingPoint = GetForegroundCaretPosition();
                     if (trackingPoint is Point caretPoint)
@@ -218,11 +214,16 @@ public partial class MainWindow : Window
                         lastCaretPosition = caretPoint;
                         caretWasFound = true;
                     }
+                    else if (trackAutomatic)
+                    {
+                        trackingPoint = GetCursorPosition();
+                        caretWasFound = false;
+                    }
                     else
                         trackingPoint = lastCaretPosition;
                 }
 
-                Rect captureRegion = trackMouse || trackCaret
+                Rect captureRegion = trackMouse || trackCaret || trackAutomatic
                     ? CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, trackingPoint)
                     : fixedCaptureRegion;
 
@@ -258,6 +259,8 @@ public partial class MainWindow : Window
 
                         if (trackCaret && !caretWasFound)
                             StatusText.Text = "Waiting for a supported text caret. Showing the last known/center position; some apps do not expose caret coordinates.";
+                        else if (trackAutomatic && !caretWasFound)
+                            StatusText.Text = "Automatic mode: no Win32 caret detected; following the mouse pointer.";
                     });
                 }
 
