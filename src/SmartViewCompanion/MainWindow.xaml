@@ -13,7 +13,7 @@
         <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <TextBlock Text="SMARTVIEW COMPANION" FontSize="22" FontWeight="Bold" Foreground="#FFFFFF"/>
-                <TextBlock Text="Virtual auxiliary display · Prototype 0.4" Foreground="#9EACBD" Margin="0,4,0,20"/>
+                <TextBlock Text="Virtual auxiliary display · Prototype 0.5" Foreground="#9EACBD" Margin="0,4,0,20"/>
                 <GroupBox Header="Capture method" Foreground="#E8EDF5" Margin="0,0,0,12" Padding="12">
                     <StackPanel>
                         <ComboBox x:Name="CaptureMethodBox" SelectedIndex="0" Height="32">
@@ -33,7 +33,7 @@
                             <ComboBoxItem Content="Text caret"/>
                             <ComboBoxItem Content="Automatic (mouse / caret)"/>
                         </ComboBox>
-                        <TextBlock Text="Fixed region and mouse-pointer tracking are implemented. Text caret and automatic tracking are planned." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,8,0,0"/>
+                        <TextBlock Text="Fixed region, mouse-pointer, and basic Win32 text-caret tracking are implemented. Automatic tracking is planned. Caret tracking depends on the target app exposing a standard Win32 caret." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,8,0,0"/>
                     </StackPanel>
                 </GroupBox>
                 <GroupBox Header="Capture region" Foreground="#E8EDF5" Margin="0,0,0,12" Padding="12">
