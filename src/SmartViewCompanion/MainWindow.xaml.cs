@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using SmartViewCompanion.Capture;
 
@@ -11,13 +13,61 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _previewCts;
     private Task? _previewTask;
     private GdiBitBltCaptureProvider? _provider;
+    private Rect? _selectedRegion;
     private long _frameCount;
     private readonly Stopwatch _fpsClock = Stopwatch.StartNew();
+
+    private const uint WdaExcludeFromCapture = 0x00000011;
 
     public MainWindow()
     {
         InitializeComponent();
+        SourceInitialized += (_, _) => TryExcludeWindowFromCapture();
         Closing += (_, _) => StopPreview();
+    }
+
+    private void TryExcludeWindowFromCapture()
+    {
+        try
+        {
+            var handle = new WindowInteropHelper(this).Handle;
+            bool applied = SetWindowDisplayAffinity(handle, WdaExcludeFromCapture);
+            CaptureExclusionText.Text = applied
+                ? "Main window exclusion: requested"
+                : "Main window exclusion: unavailable on this Windows configuration";
+        }
+        catch
+        {
+            CaptureExclusionText.Text = "Main window exclusion: unavailable";
+        }
+    }
+
+    private async void SelectRegionButton_Click(object sender, RoutedEventArgs e)
+    {
+        StopPreview();
+        Hide();
+        await Task.Delay(180);
+
+        try
+        {
+            var selector = new RegionSelectionWindow();
+            bool? accepted = selector.ShowDialog();
+            if (accepted == true && selector.SelectedScreenRegion is Rect region)
+            {
+                _selectedRegion = region;
+                RegionInfoText.Text = $"Selected: {region.Width:0} × {region.Height:0} px";
+                StatusText.Text = "Capture region selected. Press Start preview.";
+            }
+            else
+            {
+                StatusText.Text = "Region selection cancelled. Previous selection was kept.";
+            }
+        }
+        finally
+        {
+            Show();
+            Activate();
+        }
     }
 
     private async void StartButton_Click(object sender, RoutedEventArgs e)
@@ -47,22 +97,20 @@ public partial class MainWindow : Window
         if (!availability.IsAvailable)
         {
             StatusText.Text = availability.Message;
-            await _provider.DisposeAsync();
+            await provider.DisposeAsync();
             _provider = null;
             return;
         }
 
-        int[] sizes = { 0, 0 };
+        int outputWidth;
+        int outputHeight;
         switch (ResolutionBox.SelectedIndex)
         {
-            case 0: sizes = new[] { 320, 240 }; break;
-            case 1: sizes = new[] { 480, 320 }; break;
-            case 2: sizes = new[] { 480, 800 }; break;
-            default: sizes = new[] { 480, 320 }; break;
+            case 0: outputWidth = 320; outputHeight = 240; break;
+            case 2: outputWidth = 480; outputHeight = 800; break;
+            default: outputWidth = 480; outputHeight = 320; break;
         }
 
-        int outputWidth = sizes[0];
-        int outputHeight = sizes[1];
         if (PortraitCheckBox.IsChecked == true && outputWidth > outputHeight)
             (outputWidth, outputHeight) = (outputHeight, outputWidth);
 
@@ -70,41 +118,92 @@ public partial class MainWindow : Window
         int targetFps = int.TryParse(fpsText.Split(' ')[0], out int parsedFps) ? parsedFps : 10;
         double zoom = Math.Max(1.0, ZoomSlider.Value);
 
+        Rect sourceRegion = _selectedRegion ?? GetDefaultRegion(outputWidth, outputHeight);
+        Rect captureRegion = CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom);
+
         _previewCts = new CancellationTokenSource();
         _frameCount = 0;
         _fpsClock.Restart();
         CaptureInfoText.Text = "Capture: GDI BitBlt";
-        StatusText.Text = $"Running: {outputWidth} × {outputHeight} at {targetFps} FPS. Source: center of primary display.";
+        StatusText.Text = $"Running: {outputWidth} × {outputHeight} at {targetFps} FPS.";
         StartButton.IsEnabled = false;
+        PreviewPlaceholder.Visibility = Visibility.Collapsed;
 
         var token = _previewCts.Token;
-        PreviewPlaceholder.Visibility = Visibility.Collapsed;
-        _previewTask = Task.Run(() => PreviewLoopAsync(provider, outputWidth, outputHeight, targetFps, zoom, token));
+        _previewTask = Task.Run(() => PreviewLoopAsync(
+            provider, captureRegion, outputWidth, outputHeight, targetFps, token));
     }
 
-    private async Task PreviewLoopAsync(GdiBitBltCaptureProvider provider, int outputWidth, int outputHeight, int targetFps, double zoom, CancellationToken token)
+    private static Rect GetDefaultRegion(int outputWidth, int outputHeight)
     {
-
-        TimeSpan interval = TimeSpan.FromMilliseconds(1000.0 / targetFps);
         Rect screen = GdiBitBltCaptureProvider.GetPrimaryScreenBounds();
-        int cropWidth = Math.Max(1, (int)Math.Round(outputWidth / zoom));
-        int cropHeight = Math.Max(1, (int)Math.Round(outputHeight / zoom));
-        int left = (int)(screen.Width - cropWidth) / 2;
-        int top = (int)(screen.Height - cropHeight) / 2;
-        var region = new Rect(left, top, cropWidth, cropHeight);
+        Rect desired = new(
+            screen.Left + (screen.Width - outputWidth) / 2,
+            screen.Top + (screen.Height - outputHeight) / 2,
+            outputWidth, outputHeight);
+        return ClampToBounds(desired, screen);
+    }
 
+    private static Rect CalculateCrop(Rect source, int outputWidth, int outputHeight, double zoom)
+    {
+        double outputAspect = (double)outputWidth / outputHeight;
+        double sourceWidth = source.Width;
+        double sourceHeight = source.Height;
+
+        if (sourceWidth / sourceHeight > outputAspect)
+            sourceWidth = sourceHeight * outputAspect;
+        else
+            sourceHeight = sourceWidth / outputAspect;
+
+        sourceWidth = Math.Max(1, sourceWidth / zoom);
+        sourceHeight = Math.Max(1, sourceHeight / zoom);
+
+        return new Rect(
+            source.X + (source.Width - sourceWidth) / 2,
+            source.Y + (source.Height - sourceHeight) / 2,
+            sourceWidth, sourceHeight);
+    }
+
+    private static Rect ClampToBounds(Rect rectangle, Rect bounds)
+    {
+        double width = Math.Min(rectangle.Width, bounds.Width);
+        double height = Math.Min(rectangle.Height, bounds.Height);
+        double x = Math.Clamp(rectangle.X, bounds.Left, bounds.Right - width);
+        double y = Math.Clamp(rectangle.Y, bounds.Top, bounds.Bottom - height);
+        return new Rect(x, y, width, height);
+    }
+
+    private async Task PreviewLoopAsync(
+        GdiBitBltCaptureProvider provider, Rect captureRegion,
+        int outputWidth, int outputHeight, int targetFps, CancellationToken token)
+    {
+        TimeSpan interval = TimeSpan.FromMilliseconds(1000.0 / targetFps);
         try
         {
             while (!token.IsCancellationRequested)
             {
-                var frameStarted = Stopwatch.GetTimestamp();
-                BitmapSource? frame = await provider.CaptureAsync(region, token);
+                long started = Stopwatch.GetTimestamp();
+                BitmapSource? frame = await provider.CaptureAsync(captureRegion, token);
+
                 if (frame is not null)
                 {
+                    BitmapSource output = frame;
+                    if (frame.PixelWidth != outputWidth || frame.PixelHeight != outputHeight)
+                    {
+                        var resized = new TransformedBitmap(frame,
+                            new System.Windows.Media.ScaleTransform(
+                                (double)outputWidth / frame.PixelWidth,
+                                (double)outputHeight / frame.PixelHeight));
+                        resized.Freeze();
+                        output = resized;
+                    }
+
                     await Dispatcher.InvokeAsync(() =>
                     {
-                        if (token.IsCancellationRequested) return;
-                        PreviewImage.Source = frame;
+                        if (token.IsCancellationRequested)
+                            return;
+
+                        PreviewImage.Source = output;
                         _frameCount++;
                         if (_fpsClock.ElapsedMilliseconds >= 1000)
                         {
@@ -116,18 +215,22 @@ public partial class MainWindow : Window
                     });
                 }
 
-                double elapsedMs = Stopwatch.GetElapsedTime(frameStarted).TotalMilliseconds;
-                int delayMs = Math.Max(1, (int)(interval.TotalMilliseconds - elapsedMs));
-                await Task.Delay(delayMs, token);
+                double elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+                int delay = Math.Max(1, (int)(interval.TotalMilliseconds - elapsed));
+                await Task.Delay(delay, token);
             }
         }
         catch (OperationCanceledException)
         {
-            // Normal stop.
+            // Expected when the user stops preview.
         }
         catch (Exception ex)
         {
-            await Dispatcher.InvokeAsync(() => StatusText.Text = $"Capture error: {ex.Message}");
+            await Dispatcher.InvokeAsync(() =>
+            {
+                if (!token.IsCancellationRequested)
+                    StatusText.Text = $"Capture error: {ex.Message}";
+            });
         }
     }
 
@@ -150,6 +253,8 @@ public partial class MainWindow : Window
         CaptureInfoText.Text = "Capture: stopped";
         FpsInfoText.Text = "FPS: —";
         StartButton.IsEnabled = true;
-        StatusText.Text = "Status: Preview stopped.";
     }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool SetWindowDisplayAffinity(IntPtr window, uint affinity);
 }
