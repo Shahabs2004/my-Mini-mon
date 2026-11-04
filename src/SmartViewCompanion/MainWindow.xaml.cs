@@ -294,7 +294,10 @@ public partial class MainWindow : Window
             await Dispatcher.InvokeAsync(() =>
             {
                 if (!token.IsCancellationRequested)
+                {
                     StatusText.Text = $"Capture error: {ex.Message}";
+                    StartButton.IsEnabled = true;
+                }
             });
         }
     }
