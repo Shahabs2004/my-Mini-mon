@@ -13,7 +13,7 @@
         <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <TextBlock Text="SMARTVIEW COMPANION" FontSize="22" FontWeight="Bold" Foreground="#FFFFFF"/>
-                <TextBlock Text="Virtual auxiliary display · Prototype 0.5" Foreground="#9EACBD" Margin="0,4,0,20"/>
+                <TextBlock Text="Virtual auxiliary display · Prototype 0.7" Foreground="#9EACBD" Margin="0,4,0,20"/>
                 <GroupBox Header="Capture method" Foreground="#E8EDF5" Margin="0,0,0,12" Padding="12">
                     <StackPanel>
                         <ComboBox x:Name="CaptureMethodBox" SelectedIndex="0" Height="32">
