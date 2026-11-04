@@ -13,7 +13,7 @@
         <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <TextBlock Text="SMARTVIEW COMPANION" FontSize="22" FontWeight="Bold" Foreground="#FFFFFF"/>
-                <TextBlock Text="Virtual auxiliary display · Prototype 0.7" Foreground="#9EACBD" Margin="0,4,0,20"/>
+                <TextBlock Text="Virtual auxiliary display · Prototype 0.8" Foreground="#9EACBD" Margin="0,4,0,20"/>
                 <GroupBox Header="Capture method" Foreground="#E8EDF5" Margin="0,0,0,12" Padding="12">
                     <StackPanel>
                         <ComboBox x:Name="CaptureMethodBox" SelectedIndex="0" Height="32">
@@ -40,7 +40,7 @@
                     <StackPanel>
                         <ComboBox x:Name="DisplayMonitorBox" Height="32"
                                   SelectionChanged="DisplayMonitorBox_SelectionChanged"/>
-                        <TextBlock Text="Select which physical monitor is used as the capture source. Mixed-DPI behavior still needs validation."
+                        <TextBlock Text="Choose one monitor or Virtual desktop (all monitors). Virtual-desktop capture uses the combined desktop bounds; gaps between displays may contain blank pixels. Mixed-DPI behavior still needs validation."
                                    TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,8,0,0"/>
                     </StackPanel>
                 </GroupBox>
