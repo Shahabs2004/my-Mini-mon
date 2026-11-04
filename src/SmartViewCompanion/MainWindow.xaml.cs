@@ -93,7 +93,7 @@ public partial class MainWindow : Window
 
         try
         {
-            var selector = new RegionSelectionWindow();
+            var selector = new RegionSelectionWindow(GetSelectedMonitor().Bounds);
             bool? accepted = selector.ShowDialog();
             if (accepted == true && selector.SelectedScreenRegion is Rect region)
             {
@@ -174,9 +174,10 @@ public partial class MainWindow : Window
         bool trackMouse = trackingIndex == 1;
         bool trackCaret = trackingIndex == 2;
         bool trackAutomatic = trackingIndex == 3;
+        Rect monitorBounds = GetSelectedMonitor().Bounds;
         Rect sourceRegion = trackMouse || trackCaret || trackAutomatic
-            ? GdiBitBltCaptureProvider.GetPrimaryScreenBounds()
-            : (_selectedRegion ?? GetDefaultRegion(outputWidth, outputHeight));
+            ? monitorBounds
+            : (_selectedRegion is Rect selected ? ClampToBounds(selected, monitorBounds) : GetDefaultRegion(outputWidth, outputHeight, monitorBounds));
         Rect captureRegion = CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, null);
 
         _previewCts = new CancellationTokenSource();
@@ -199,9 +200,8 @@ public partial class MainWindow : Window
             targetFps, zoom, trackMouse, trackCaret, trackAutomatic, token));
     }
 
-    private static Rect GetDefaultRegion(int outputWidth, int outputHeight)
+    private static Rect GetDefaultRegion(int outputWidth, int outputHeight, Rect screen)
     {
-        Rect screen = GdiBitBltCaptureProvider.GetPrimaryScreenBounds();
         Rect desired = new(
             screen.Left + (screen.Width - outputWidth) / 2,
             screen.Top + (screen.Height - outputHeight) / 2,
