@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using SmartViewCompanion.Capture;
+using SmartViewCompanion.Core;
 
 namespace SmartViewCompanion;
 
@@ -25,6 +26,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         SourceInitialized += (_, _) => TryExcludeWindowFromCapture();
         Closing += MainWindow_Closing;
+        Loaded += MainWindow_Loaded;
     }
 
     private void TryExcludeWindowFromCapture()
