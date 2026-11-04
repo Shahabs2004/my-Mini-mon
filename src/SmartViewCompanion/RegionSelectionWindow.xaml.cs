@@ -57,7 +57,6 @@ public partial class RegionSelectionWindow : Window
             SelectedScreenRegion = new Rect(left, top, width, height);
 
         DialogResult = SelectedScreenRegion.HasValue;
-        Close();
     }
 
     private void UpdateRectangle(Point current)
@@ -76,7 +75,6 @@ public partial class RegionSelectionWindow : Window
         {
             SelectedScreenRegion = null;
             DialogResult = false;
-            Close();
         }
     }
 }
