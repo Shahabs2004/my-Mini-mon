@@ -45,13 +45,10 @@ public static class DisplayMonitorService
         if (monitors.Count == 0)
             return Array.Empty<DisplayMonitorInfo>();
 
-        double left = monitors.Min(m => m.Bounds.Left);
-        double top = monitors.Min(m => m.Bounds.Top);
-        double right = monitors.Max(m => m.Bounds.Right);
-        double bottom = monitors.Max(m => m.Bounds.Bottom);
+        Rect virtualBounds = ScreenGeometry.GetBoundingBounds(monitors.Select(m => m.Bounds));
         var virtualDesktop = new DisplayMonitorInfo(
             "Virtual desktop (all monitors)",
-            new Rect(left, top, right - left, bottom - top),
+            virtualBounds,
             false,
             true);
 
