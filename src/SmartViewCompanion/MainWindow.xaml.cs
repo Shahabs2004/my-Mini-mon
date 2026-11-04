@@ -33,7 +33,7 @@ public partial class MainWindow : Window
             var handle = new WindowInteropHelper(this).Handle;
             bool applied = SetWindowDisplayAffinity(handle, WdaExcludeFromCapture);
             CaptureExclusionText.Text = applied
-                ? "Main window exclusion: requested"
+                ? "Main window exclusion: requested (best effort)"
                 : "Main window exclusion: unavailable on this Windows configuration";
         }
         catch
@@ -85,11 +85,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (trackingIndex is 2 or 3)
+        if (trackingIndex == 3)
         {
-            StatusText.Text = trackingIndex == 2
-                ? "Text-caret tracking is not implemented yet. Choose Fixed region or Mouse pointer."
-                : "Automatic tracking is not implemented yet. Choose Fixed region or Mouse pointer.";
+            StatusText.Text = "Automatic tracking is not implemented yet. Choose Fixed region, Mouse pointer, or Text caret.";
             return;
         }
 
@@ -121,7 +119,8 @@ public partial class MainWindow : Window
         double zoom = Math.Max(1.0, ZoomSlider.Value);
 
         bool trackMouse = trackingIndex == 1;
-        Rect sourceRegion = trackMouse
+        bool trackCaret = trackingIndex == 2;
+        Rect sourceRegion = trackMouse || trackCaret
             ? GdiBitBltCaptureProvider.GetPrimaryScreenBounds()
             : (_selectedRegion ?? GetDefaultRegion(outputWidth, outputHeight));
         Rect captureRegion = CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, null);
@@ -130,15 +129,19 @@ public partial class MainWindow : Window
         _frameCount = 0;
         _fpsClock.Restart();
         CaptureInfoText.Text = "Capture: GDI BitBlt";
-        StatusText.Text = trackMouse
-            ? $"Mouse tracking active: {outputWidth} × {outputHeight} at {targetFps} FPS."
-            : $"Fixed region active: {outputWidth} × {outputHeight} at {targetFps} FPS.";
+        StatusText.Text = trackingIndex switch
+        {
+            1 => $"Mouse tracking active: {outputWidth} × {outputHeight} at {targetFps} FPS.",
+            2 => $"Text-caret tracking active: {outputWidth} × {outputHeight} at {targetFps} FPS. Some apps do not expose a Win32 caret.",
+            _ => $"Fixed region active: {outputWidth} × {outputHeight} at {targetFps} FPS."
+        };
         StartButton.IsEnabled = false;
         PreviewPlaceholder.Visibility = Visibility.Collapsed;
 
         var token = _previewCts.Token;
         _previewTask = Task.Run(() => PreviewLoopAsync(
-            provider, sourceRegion, captureRegion, outputWidth, outputHeight, targetFps, zoom, trackMouse, token));
+            provider, sourceRegion, captureRegion, outputWidth, outputHeight,
+            targetFps, zoom, trackMouse, trackCaret, token));
     }
 
     private static Rect GetDefaultRegion(int outputWidth, int outputHeight)
@@ -190,17 +193,39 @@ public partial class MainWindow : Window
     private async Task PreviewLoopAsync(
         GdiBitBltCaptureProvider provider, Rect sourceRegion, Rect fixedCaptureRegion,
         int outputWidth, int outputHeight, int targetFps, double zoom,
-        bool trackMouse, CancellationToken token)
+        bool trackMouse, bool trackCaret, CancellationToken token)
     {
         TimeSpan interval = TimeSpan.FromMilliseconds(1000.0 / targetFps);
+        Point lastCaretPosition = new(
+            sourceRegion.Left + sourceRegion.Width / 2,
+            sourceRegion.Top + sourceRegion.Height / 2);
+        bool caretWasFound = false;
+
         try
         {
             while (!token.IsCancellationRequested)
             {
                 long started = Stopwatch.GetTimestamp();
-                Rect captureRegion = trackMouse
-                    ? CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, GetCursorPosition())
+                Point? trackingPoint = null;
+
+                if (trackMouse)
+                    trackingPoint = GetCursorPosition();
+                else if (trackCaret)
+                {
+                    trackingPoint = GetForegroundCaretPosition();
+                    if (trackingPoint is Point caretPoint)
+                    {
+                        lastCaretPosition = caretPoint;
+                        caretWasFound = true;
+                    }
+                    else
+                        trackingPoint = lastCaretPosition;
+                }
+
+                Rect captureRegion = trackMouse || trackCaret
+                    ? CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, trackingPoint)
                     : fixedCaptureRegion;
+
                 BitmapSource? frame = await provider.CaptureAsync(captureRegion, token);
 
                 if (frame is not null)
@@ -230,6 +255,9 @@ public partial class MainWindow : Window
                             _frameCount = 0;
                             _fpsClock.Restart();
                         }
+
+                        if (trackCaret && !caretWasFound)
+                            StatusText.Text = "Waiting for a supported text caret. Showing the last known/center position; some apps do not expose caret coordinates.";
                     });
                 }
 
@@ -280,6 +308,41 @@ public partial class MainWindow : Window
         return new Point(point.X, point.Y);
     }
 
+    /// <summary>
+    /// Reads the foreground thread's caret rectangle and converts its top-left
+    /// client coordinate to desktop coordinates. This works only for applications
+    /// that expose a standard Win32 GUI caret.
+    /// </summary>
+    private static Point? GetForegroundCaretPosition()
+    {
+        IntPtr foregroundWindow = GetForegroundWindow();
+        if (foregroundWindow == IntPtr.Zero)
+            return null;
+
+        uint threadId = GetWindowThreadProcessId(foregroundWindow, out _);
+        if (threadId == 0)
+            return null;
+
+        var info = new GuiThreadInfo
+        {
+            Size = (uint)Marshal.SizeOf<GuiThreadInfo>()
+        };
+
+        if (!GetGUIThreadInfo(threadId, ref info) || info.CaretWindow == IntPtr.Zero)
+            return null;
+
+        var point = new NativePoint
+        {
+            X = info.CaretRect.Left,
+            Y = info.CaretRect.Top
+        };
+
+        if (!ClientToScreen(info.CaretWindow, ref point))
+            return null;
+
+        return new Point(point.X, point.Y);
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     private struct NativePoint
     {
@@ -287,8 +350,43 @@ public partial class MainWindow : Window
         public int Y;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeRect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct GuiThreadInfo
+    {
+        public uint Size;
+        public uint Flags;
+        public IntPtr ActiveWindow;
+        public IntPtr FocusWindow;
+        public IntPtr CaptureWindow;
+        public IntPtr MenuOwner;
+        public IntPtr MoveSizeWindow;
+        public IntPtr CaretWindow;
+        public NativeRect CaretRect;
+    }
+
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool GetCursorPos(out NativePoint point);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool GetGUIThreadInfo(uint threadId, ref GuiThreadInfo info);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool ClientToScreen(IntPtr window, ref NativePoint point);
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SetWindowDisplayAffinity(IntPtr window, uint affinity);
