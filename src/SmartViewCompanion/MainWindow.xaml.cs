@@ -181,8 +181,8 @@ public partial class MainWindow : Window
         Rect monitorBounds = GetSelectedMonitor().Bounds;
         Rect sourceRegion = trackMouse || trackCaret || trackAutomatic
             ? monitorBounds
-            : (_selectedRegion is Rect selected ? ClampToBounds(selected, monitorBounds) : GetDefaultRegion(outputWidth, outputHeight, monitorBounds));
-        Rect captureRegion = CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, null);
+            : (_selectedRegion is Rect selected ? ScreenGeometry.ClampToBounds(selected, monitorBounds) : ScreenGeometry.GetCenteredRegion(monitorBounds, outputWidth, outputHeight));
+        Rect captureRegion = ScreenGeometry.CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, null);
 
         _previewCts = new CancellationTokenSource();
         _frameCount = 0;
@@ -202,51 +202,6 @@ public partial class MainWindow : Window
         _previewTask = Task.Run(() => PreviewLoopAsync(
             provider, sourceRegion, captureRegion, outputWidth, outputHeight,
             targetFps, zoom, trackMouse, trackCaret, trackAutomatic, token));
-    }
-
-    private static Rect GetDefaultRegion(int outputWidth, int outputHeight, Rect screen)
-    {
-        Rect desired = new(
-            screen.Left + (screen.Width - outputWidth) / 2,
-            screen.Top + (screen.Height - outputHeight) / 2,
-            outputWidth, outputHeight);
-        return ClampToBounds(desired, screen);
-    }
-
-    private static Rect CalculateCrop(
-        Rect source, int outputWidth, int outputHeight, double zoom, Point? requestedCenter)
-    {
-        double outputAspect = (double)outputWidth / outputHeight;
-        double sourceWidth = source.Width;
-        double sourceHeight = source.Height;
-
-        if (sourceWidth / sourceHeight > outputAspect)
-            sourceWidth = sourceHeight * outputAspect;
-        else
-            sourceHeight = sourceWidth / outputAspect;
-
-        sourceWidth = Math.Max(1, sourceWidth / zoom);
-        sourceHeight = Math.Max(1, sourceHeight / zoom);
-
-        Point center = requestedCenter ?? new Point(
-            source.Left + source.Width / 2,
-            source.Top + source.Height / 2);
-
-        var desired = new Rect(
-            center.X - sourceWidth / 2,
-            center.Y - sourceHeight / 2,
-            sourceWidth, sourceHeight);
-
-        return ClampToBounds(desired, source);
-    }
-
-    private static Rect ClampToBounds(Rect rectangle, Rect bounds)
-    {
-        double width = Math.Min(rectangle.Width, bounds.Width);
-        double height = Math.Min(rectangle.Height, bounds.Height);
-        double x = Math.Clamp(rectangle.X, bounds.Left, bounds.Right - width);
-        double y = Math.Clamp(rectangle.Y, bounds.Top, bounds.Bottom - height);
-        return new Rect(x, y, width, height);
     }
 
     private async Task PreviewLoopAsync(
@@ -287,7 +242,7 @@ public partial class MainWindow : Window
                 }
 
                 Rect captureRegion = trackMouse || trackCaret || trackAutomatic
-                    ? CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, trackingPoint)
+                    ? ScreenGeometry.CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, trackingPoint)
                     : fixedCaptureRegion;
 
                 BitmapSource? frame = await provider.CaptureAsync(captureRegion, token);
