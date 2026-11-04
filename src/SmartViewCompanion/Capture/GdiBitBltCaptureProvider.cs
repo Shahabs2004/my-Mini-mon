@@ -84,6 +84,9 @@ public sealed class GdiBitBltCaptureProvider : IFrameCaptureProvider
             int stride = checked(width * 4);
             byte[] pixels = new byte[checked(stride * height)];
             Marshal.Copy(bits, pixels, 0, pixels.Length);
+            // GDI BI_RGB does not guarantee a useful alpha channel; mark every pixel opaque.
+            for (int i = 3; i < pixels.Length; i += 4)
+                pixels[i] = 255;
 
             BitmapSource frame = BitmapSource.Create(
                 width, height, 96, 96, PixelFormats.Bgra32, null, pixels, stride);
