@@ -29,6 +29,18 @@ public sealed class TrackingPointResolverTests
     }
 
     [Fact]
+    public void Automatic_PreservesNegativeDesktopCoordinates()
+    {
+        var leftMonitorMouse = new Point(-900, 350);
+
+        var result = TrackingPointResolver.Resolve(
+            TrackingMode.Automatic, null, leftMonitorMouse, LastCaret);
+
+        Assert.Equal(leftMonitorMouse, result.Position);
+        Assert.False(result.CaretFound);
+    }
+
+    [Fact]
     public void CaretMode_UsesLastKnownPositionWhenCaretIsUnavailable()
     {
         var result = TrackingPointResolver.Resolve(TrackingMode.Caret, null, Mouse, LastCaret);
