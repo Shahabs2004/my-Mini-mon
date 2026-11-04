@@ -4,16 +4,16 @@ A Windows companion application for a future USB-powered auxiliary display. The 
 
 ## Project status
 
-**Prototype 0.5 / early development.** The app includes a GDI BitBlt capture provider, live preview, drag-to-select fixed capture rectangle, mouse-pointer tracking, and basic Win32 text-caret tracking. Caret tracking uses the foreground GUI thread's `GetGUIThreadInfo` caret rectangle and converts it to desktop coordinates. It works only when the target application exposes a standard Win32 caret; some applications (including some custom-rendered editors, browsers, and elevated apps) may not expose usable caret information. When no caret is found, the preview remains at the last known position (or the primary-screen center before the first successful detection).
+**Prototype 0.6 / early development.** The app includes a GDI BitBlt capture provider, live preview, drag-to-select fixed capture rectangle, mouse-pointer tracking, basic Win32 text-caret tracking, and a simple automatic mode (caret-first with mouse fallback). Caret tracking uses the foreground GUI thread's `GetGUIThreadInfo` caret rectangle and converts it to desktop coordinates. It works only when the target application exposes a standard Win32 caret; some applications (including some custom-rendered editors, browsers, and elevated apps) may not expose usable caret information. When no caret is found, the preview remains at the last known position (or the primary-screen center before the first successful detection).
 
-Automatic capture currently selects GDI BitBlt because it is the only implemented backend. Windows Graphics Capture, DXGI Desktop Duplication, automatic tracking, multi-monitor tracking, and UI Automation caret fallback are not implemented yet.
+Automatic capture currently selects GDI BitBlt because it is the only implemented backend. Windows Graphics Capture, DXGI Desktop Duplication, multi-monitor tracking, and UI Automation caret fallback are not implemented yet.
 
 ## Goals
 
 - The future hardware is a USB peripheral, **not** a Windows secondary monitor.
 - Capture API and tracking mode are independent settings.
 - Capture APIs planned: Windows Graphics Capture, DXGI Desktop Duplication, and GDI BitBlt, plus Automatic selection.
-- Tracking modes: Fixed Region, Mouse, Caret, and Automatic.
+- Tracking modes: Fixed Region, Mouse, Caret, and Automatic (caret-first, mouse fallback).
 - Preview output supports crop, zoom, aspect-ratio fit, output dimensions, and target frame rate.
 
 ## Requirements
@@ -52,6 +52,7 @@ dotnet build .\SmartViewCompanion.sln --configuration Release
 - [x] Fixed-region selection overlay (primary display)
 - [x] Mouse tracking (primary display)
 - [x] Basic Win32 caret tracking (foreground thread; app-dependent)
+- [x] Simple automatic tracking (caret-first, mouse fallback)
 - [ ] UI Automation caret fallback where feasible
 - [ ] Windows Graphics Capture provider
 - [ ] DXGI Desktop Duplication provider
