@@ -37,11 +37,15 @@ public partial class MainWindow : Window
             DisplayMonitorBox.ItemsSource = monitors;
             DisplayMonitorBox.SelectedItem = monitors.FirstOrDefault(m => m.IsPrimary) ?? monitors.FirstOrDefault();
             if (DisplayMonitorBox.SelectedItem is null)
+            {
                 StatusText.Text = "Windows did not report any active display monitor.";
+                StartButton.IsEnabled = false;
+            }
         }
         catch (Exception ex)
         {
             StatusText.Text = $"Display enumeration failed: {ex.Message}";
+            StartButton.IsEnabled = false;
         }
     }
 
