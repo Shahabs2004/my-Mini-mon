@@ -19,5 +19,5 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Build solution
-        run: dotnet build .\SmartViewCompanion.sln --configuration Release
+      - name: Build and test solution
+        run: dotnet test .\SmartViewCompanion.sln --configuration Release
