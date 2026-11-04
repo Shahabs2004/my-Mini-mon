@@ -33,7 +33,7 @@
                             <ComboBoxItem Content="Text caret"/>
                             <ComboBoxItem Content="Automatic (mouse / caret)"/>
                         </ComboBox>
-                        <TextBlock Text="Fixed region, mouse-pointer, and basic Win32 text-caret tracking are implemented. Automatic tracking is planned. Caret tracking depends on the target app exposing a standard Win32 caret." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,8,0,0"/>
+                        <TextBlock Text="Fixed region, mouse-pointer, basic Win32 text-caret, and caret-first automatic tracking (mouse fallback) are implemented. Caret detection depends on the target app exposing a standard Win32 caret." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,8,0,0"/>
                     </StackPanel>
                 </GroupBox>
                 <GroupBox Header="Capture region" Foreground="#E8EDF5" Margin="0,0,0,12" Padding="12">
