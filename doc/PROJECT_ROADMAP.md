@@ -2,7 +2,7 @@
 
 > **Purpose:** This is the project's central, maintained checklist. Keep it synchronized with the actual source code and verified tests. Mark an item `[x]` only after its implementation exists in the repository and its acceptance criteria have been checked. A committed change is not automatically a tested or verified feature.
 >
-> **Current milestone:** Prototype 0.6 — software preview simulator
+> **Current milestone:** Prototype 0.6 — software preview simulator (preview lifecycle hardening in progress)
 > **Last roadmap review:** 2026-11-05
 > **Repository:** https://github.com/Shahabs2004/my-Mini-mon
 
@@ -217,6 +217,15 @@ Do not couple tracking logic to a particular capture API. Do not couple the prev
 - Do not start PCB/hardware work until the software simulator and transport contract are sufficiently stable.
 - Preserve the core requirement: the final device is a USB peripheral, not a Windows secondary monitor.
 
-## 8. Progress snapshot
+## 8. Recent implementation notes
+
+### 2026-11-05 — Preview lifecycle hardening (source committed; verification pending)
+- Capture shutdown now cancels and awaits the active preview task before disposing the provider.
+- Start/stop and region-selection flows await the previous preview session, preventing overlapping capture loops.
+- Window closing now waits for preview cleanup before closing.
+- Capture-backend initialization exceptions are reported in the status area and the Start control is restored.
+- These changes are **not yet marked complete**: Windows build and repeated start/stop runtime tests are still required.
+
+## 9. Progress snapshot
 
 Progress is tracked by checked checklist items, not by an optimistic percentage. A percentage should be calculated only after defining weighted milestones; until then, the milestone status and checklists above are the authoritative progress report.
