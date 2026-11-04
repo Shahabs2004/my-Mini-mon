@@ -1,18 +1,20 @@
 # SmartView Companion
 
-A Windows companion application for a future USB-powered auxiliary display. The first milestone is a software simulator: capture a region of the desktop, track the mouse or text caret, transform the image, and show it in a virtual display window.
+A Windows companion application for a future USB-powered auxiliary display. The current milestone is a software simulator: capture a region of the desktop, track the mouse or a supported text caret, transform the image, and show it in a preview window.
 
 ## Project status
 
-**Prototype 0.4 / early development.** The app now has a GDI BitBlt capture provider, a live preview, a drag-to-select fixed capture rectangle, and live mouse-pointer tracking. Fixed-region crops use the selected rectangle; mouse tracking follows the pointer on the primary display. Automatic currently uses GDI BitBlt because it is the only implemented backend. Windows Graphics Capture, DXGI, and caret tracking are not implemented yet.
+**Prototype 0.5 / early development.** The app includes a GDI BitBlt capture provider, live preview, drag-to-select fixed capture rectangle, mouse-pointer tracking, and basic Win32 text-caret tracking. Caret tracking uses the foreground GUI thread's `GetGUIThreadInfo` caret rectangle and converts it to desktop coordinates. It works only when the target application exposes a standard Win32 caret; some applications (including some custom-rendered editors, browsers, and elevated apps) may not expose usable caret information. When no caret is found, the preview remains at the last known position (or the primary-screen center before the first successful detection).
+
+Automatic capture currently selects GDI BitBlt because it is the only implemented backend. Windows Graphics Capture, DXGI Desktop Duplication, automatic tracking, multi-monitor tracking, and UI Automation caret fallback are not implemented yet.
 
 ## Goals
 
 - The future hardware is a USB peripheral, **not** a Windows secondary monitor.
 - Capture API and tracking mode are independent settings.
 - Capture APIs planned: Windows Graphics Capture, DXGI Desktop Duplication, and GDI BitBlt, plus Automatic selection.
-- Tracking modes planned: Fixed Region, Mouse, Caret, and Automatic.
-- Preview output supports crop, zoom, rotation, output dimensions, and target frame rate.
+- Tracking modes: Fixed Region, Mouse, Caret, and Automatic.
+- Preview output supports crop, zoom, aspect-ratio fit, output dimensions, and target frame rate.
 
 ## Requirements
 
@@ -23,8 +25,17 @@ A Windows companion application for a future USB-powered auxiliary display. The 
 ## Build
 
 ```powershell
-dotnet build .\SmartViewCompanion.sln
+dotnet build .\SmartViewCompanion.sln --configuration Release
 ```
+
+## Current limitations
+
+- Capture and tracking currently use the **primary display** only.
+- The region selector is limited to the primary display.
+- Caret tracking is based on the standard Win32 GUI caret. It is not a universal text-caret detector and does not yet use UI Automation.
+- GDI BitBlt may fail to capture protected content, hardware overlays, or some accelerated surfaces.
+- `WDA_EXCLUDEFROMCAPTURE` is requested for the app window as a best-effort measure; actual exclusion must be verified on the target Windows version and capture path.
+- The preview is a software simulator. No USB device protocol, firmware, or physical display output exists yet.
 
 ## Architecture principles
 
@@ -40,12 +51,14 @@ dotnet build .\SmartViewCompanion.sln
 - [x] Working GDI BitBlt capture provider and live fixed-center preview
 - [x] Fixed-region selection overlay (primary display)
 - [x] Mouse tracking (primary display)
+- [x] Basic Win32 caret tracking (foreground thread; app-dependent)
+- [ ] UI Automation caret fallback where feasible
 - [ ] Windows Graphics Capture provider
 - [ ] DXGI Desktop Duplication provider
-- [ ] Caret tracking (Win32 first, UI Automation fallback where feasible)
-- [x] Basic crop, zoom, aspect-ratio fit, and output resize
+- [ ] Multi-monitor selection and tracking
 - [ ] Performance telemetry and saved profiles
 - [ ] USB device protocol simulator
+- [ ] Hardware/firmware integration and physical-device testing
 
 ## License
 
