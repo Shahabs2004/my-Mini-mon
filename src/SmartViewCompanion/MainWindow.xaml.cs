@@ -29,6 +29,35 @@ public partial class MainWindow : Window
         Loaded += MainWindow_Loaded;
     }
 
+    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var monitors = DisplayMonitorService.GetMonitors();
+            DisplayMonitorBox.ItemsSource = monitors;
+            DisplayMonitorBox.SelectedItem = monitors.FirstOrDefault(m => m.IsPrimary) ?? monitors.FirstOrDefault();
+            if (DisplayMonitorBox.SelectedItem is null)
+                StatusText.Text = "Windows did not report any active display monitor.";
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"Display enumeration failed: {ex.Message}";
+        }
+    }
+
+    private DisplayMonitorInfo GetSelectedMonitor()
+    {
+        return DisplayMonitorBox.SelectedItem as DisplayMonitorInfo
+            ?? DisplayMonitorService.GetMonitors().First(m => m.IsPrimary);
+    }
+
+    private void DisplayMonitorBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _selectedRegion = null;
+        if (RegionInfoText is not null)
+            RegionInfoText.Text = "No region selected · centered default will be used";
+    }
+
     private void TryExcludeWindowFromCapture()
     {
         try
