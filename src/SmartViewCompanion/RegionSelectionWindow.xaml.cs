@@ -12,13 +12,13 @@ public partial class RegionSelectionWindow : Window
 
     public Rect? SelectedScreenRegion { get; private set; }
 
-    public RegionSelectionWindow()
+    public RegionSelectionWindow(Rect monitorBounds)
     {
         InitializeComponent();
-        Left = 0;
-        Top = 0;
-        Width = SystemParameters.PrimaryScreenWidth;
-        Height = SystemParameters.PrimaryScreenHeight;
+        Left = monitorBounds.Left;
+        Top = monitorBounds.Top;
+        Width = monitorBounds.Width;
+        Height = monitorBounds.Height;
         Loaded += (_, _) => SelectionCanvas.Focus();
     }
 
