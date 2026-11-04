@@ -85,9 +85,11 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (trackingIndex != 0)
+        if (trackingIndex is 2 or 3)
         {
-            StatusText.Text = "This build supports Fixed region only. Mouse and text-caret tracking are planned next.";
+            StatusText.Text = trackingIndex == 2
+                ? "Text-caret tracking is not implemented yet. Choose Fixed region or Mouse pointer."
+                : "Automatic tracking is not implemented yet. Choose Fixed region or Mouse pointer.";
             return;
         }
 
@@ -118,20 +120,25 @@ public partial class MainWindow : Window
         int targetFps = int.TryParse(fpsText.Split(' ')[0], out int parsedFps) ? parsedFps : 10;
         double zoom = Math.Max(1.0, ZoomSlider.Value);
 
-        Rect sourceRegion = _selectedRegion ?? GetDefaultRegion(outputWidth, outputHeight);
-        Rect captureRegion = CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom);
+        bool trackMouse = trackingIndex == 1;
+        Rect sourceRegion = trackMouse
+            ? GdiBitBltCaptureProvider.GetPrimaryScreenBounds()
+            : (_selectedRegion ?? GetDefaultRegion(outputWidth, outputHeight));
+        Rect captureRegion = CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, null);
 
         _previewCts = new CancellationTokenSource();
         _frameCount = 0;
         _fpsClock.Restart();
         CaptureInfoText.Text = "Capture: GDI BitBlt";
-        StatusText.Text = $"Running: {outputWidth} × {outputHeight} at {targetFps} FPS.";
+        StatusText.Text = trackMouse
+            ? $"Mouse tracking active: {outputWidth} × {outputHeight} at {targetFps} FPS."
+            : $"Fixed region active: {outputWidth} × {outputHeight} at {targetFps} FPS.";
         StartButton.IsEnabled = false;
         PreviewPlaceholder.Visibility = Visibility.Collapsed;
 
         var token = _previewCts.Token;
         _previewTask = Task.Run(() => PreviewLoopAsync(
-            provider, captureRegion, outputWidth, outputHeight, targetFps, token));
+            provider, sourceRegion, captureRegion, outputWidth, outputHeight, targetFps, zoom, trackMouse, token));
     }
 
     private static Rect GetDefaultRegion(int outputWidth, int outputHeight)
@@ -144,7 +151,8 @@ public partial class MainWindow : Window
         return ClampToBounds(desired, screen);
     }
 
-    private static Rect CalculateCrop(Rect source, int outputWidth, int outputHeight, double zoom)
+    private static Rect CalculateCrop(
+        Rect source, int outputWidth, int outputHeight, double zoom, Point? requestedCenter)
     {
         double outputAspect = (double)outputWidth / outputHeight;
         double sourceWidth = source.Width;
@@ -158,10 +166,16 @@ public partial class MainWindow : Window
         sourceWidth = Math.Max(1, sourceWidth / zoom);
         sourceHeight = Math.Max(1, sourceHeight / zoom);
 
-        return new Rect(
-            source.X + (source.Width - sourceWidth) / 2,
-            source.Y + (source.Height - sourceHeight) / 2,
+        Point center = requestedCenter ?? new Point(
+            source.Left + source.Width / 2,
+            source.Top + source.Height / 2);
+
+        var desired = new Rect(
+            center.X - sourceWidth / 2,
+            center.Y - sourceHeight / 2,
             sourceWidth, sourceHeight);
+
+        return ClampToBounds(desired, source);
     }
 
     private static Rect ClampToBounds(Rect rectangle, Rect bounds)
@@ -174,8 +188,9 @@ public partial class MainWindow : Window
     }
 
     private async Task PreviewLoopAsync(
-        GdiBitBltCaptureProvider provider, Rect captureRegion,
-        int outputWidth, int outputHeight, int targetFps, CancellationToken token)
+        GdiBitBltCaptureProvider provider, Rect sourceRegion, Rect fixedCaptureRegion,
+        int outputWidth, int outputHeight, int targetFps, double zoom,
+        bool trackMouse, CancellationToken token)
     {
         TimeSpan interval = TimeSpan.FromMilliseconds(1000.0 / targetFps);
         try
@@ -183,6 +198,9 @@ public partial class MainWindow : Window
             while (!token.IsCancellationRequested)
             {
                 long started = Stopwatch.GetTimestamp();
+                Rect captureRegion = trackMouse
+                    ? CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, GetCursorPosition())
+                    : fixedCaptureRegion;
                 BitmapSource? frame = await provider.CaptureAsync(captureRegion, token);
 
                 if (frame is not null)
@@ -254,6 +272,23 @@ public partial class MainWindow : Window
         FpsInfoText.Text = "FPS: —";
         StartButton.IsEnabled = true;
     }
+
+    private static Point? GetCursorPosition()
+    {
+        if (!GetCursorPos(out NativePoint point))
+            return null;
+        return new Point(point.X, point.Y);
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativePoint
+    {
+        public int X;
+        public int Y;
+    }
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool GetCursorPos(out NativePoint point);
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern bool SetWindowDisplayAffinity(IntPtr window, uint affinity);
