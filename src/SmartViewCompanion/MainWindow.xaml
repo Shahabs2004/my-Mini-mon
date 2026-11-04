@@ -75,7 +75,7 @@
                 </DockPanel>
                 <Border Grid.Row="1" Margin="0,18" Background="#080B10" BorderBrush="#526174" BorderThickness="1" CornerRadius="8" Padding="12">
                     <Grid>
-                        <Border Width="480" Height="320" MaxWidth="100%" MaxHeight="100%" Background="#111923" BorderBrush="#3978D4" BorderThickness="2" CornerRadius="5">
+                        <Border Width="480" Height="320" MaxWidth="900" MaxHeight="600" Background="#111923" BorderBrush="#3978D4" BorderThickness="2" CornerRadius="5">
                             <Grid>
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <TextBlock Text="SMARTVIEW" FontSize="24" FontWeight="Bold" Foreground="#DCEBFF" HorizontalAlignment="Center"/>
