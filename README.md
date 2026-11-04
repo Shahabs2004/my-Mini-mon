@@ -28,8 +28,10 @@ Automatic capture currently selects GDI BitBlt because it is the only implemente
 ## Build
 
 ```powershell
-dotnet build .\SmartViewCompanion.sln --configuration Release
+dotnet test .\SmartViewCompanion.sln --configuration Release
 ```
+
+The solution now includes an initial xUnit test project for desktop geometry and crop calculations. The Windows GitHub Actions workflow runs `dotnet test`; check the Actions tab for the result of the latest run.
 
 ## Current limitations
 
