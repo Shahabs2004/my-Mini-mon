@@ -1,19 +1,19 @@
- <Window x:Class="SmartViewCompanion.MainWindow"
+<Window x:Class="SmartViewCompanion.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="SmartView Companion" Height="720" Width="1120"
-        MinHeight="620" MinWidth="980" Background="#151B23" Foreground="#E8EDF5"
+        Title="SmartView Companion" Height="760" Width="1140"
+        MinHeight="650" MinWidth="1000" Background="#151B23" Foreground="#E8EDF5"
         WindowStartupLocation="CenterScreen">
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="360"/>
+            <ColumnDefinition Width="370"/>
             <ColumnDefinition Width="20"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <TextBlock Text="SMARTVIEW COMPANION" FontSize="22" FontWeight="Bold" Foreground="#FFFFFF"/>
-                <TextBlock Text="Virtual auxiliary display · Prototype 0.2" Foreground="#9EACBD" Margin="0,4,0,20"/>
+                <TextBlock Text="Virtual auxiliary display · Prototype 0.3" Foreground="#9EACBD" Margin="0,4,0,20"/>
                 <GroupBox Header="Capture method" Foreground="#E8EDF5" Margin="0,0,0,12" Padding="12">
                     <StackPanel>
                         <ComboBox x:Name="CaptureMethodBox" SelectedIndex="0" Height="32">
@@ -22,7 +22,7 @@
                             <ComboBoxItem Content="DXGI Desktop Duplication"/>
                             <ComboBoxItem Content="GDI BitBlt"/>
                         </ComboBox>
-                        <TextBlock Text="Automatic currently selects the implemented GDI BitBlt backend. Other engines are not available yet." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,8,0,0"/>
+                        <TextBlock Text="Automatic currently selects GDI BitBlt. WGC and DXGI are not implemented yet." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,8,0,0"/>
                     </StackPanel>
                 </GroupBox>
                 <GroupBox Header="Tracking mode" Foreground="#E8EDF5" Margin="0,0,0,12" Padding="12">
@@ -33,7 +33,17 @@
                             <ComboBoxItem Content="Text caret"/>
                             <ComboBoxItem Content="Automatic (mouse / caret)"/>
                         </ComboBox>
-                        <TextBlock Text="This build captures a fixed crop from the center of the primary display." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,8,0,0"/>
+                        <TextBlock Text="Fixed region is implemented. Mouse and caret tracking are planned." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Capture region" Foreground="#E8EDF5" Margin="0,0,0,12" Padding="12">
+                    <StackPanel>
+                        <Button Content="Select region on primary display" Padding="10,8"
+                                Click="SelectRegionButton_Click"/>
+                        <TextBlock x:Name="RegionInfoText" Text="No region selected · centered default will be used"
+                                   Foreground="#AAB6C5" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                        <TextBlock x:Name="CaptureExclusionText" Text="Main window exclusion: checking…"
+                                   Foreground="#75B798" TextWrapping="Wrap" Margin="0,5,0,0"/>
                     </StackPanel>
                 </GroupBox>
                 <GroupBox Header="Output" Foreground="#E8EDF5" Margin="0,0,0,12" Padding="12">
@@ -43,7 +53,6 @@
                             <ComboBoxItem Content="320 × 240"/>
                             <ComboBoxItem Content="480 × 320"/>
                             <ComboBoxItem Content="480 × 800"/>
-                            <ComboBoxItem Content="Custom (later)"/>
                         </ComboBox>
                         <TextBlock Text="Target frame rate"/>
                         <ComboBox x:Name="FpsBox" SelectedIndex="1" Height="32" Margin="0,5,0,10">
@@ -54,16 +63,21 @@
                             <ComboBoxItem Content="60 FPS"/>
                         </ComboBox>
                         <TextBlock Text="Zoom"/>
-                        <Slider x:Name="ZoomSlider" Minimum="1" Maximum="4" Value="1" TickFrequency="0.25" IsSnapToTickEnabled="True"/>
+                        <Slider x:Name="ZoomSlider" Minimum="1" Maximum="4" Value="1"
+                                TickFrequency="0.25" IsSnapToTickEnabled="True"/>
                         <TextBlock Text="Orientation"/>
                         <CheckBox x:Name="PortraitCheckBox" Content="Portrait output" Margin="0,5,0,0"/>
                     </StackPanel>
                 </GroupBox>
                 <StackPanel Orientation="Horizontal">
-                    <Button x:Name="StartButton" Content="Start preview" Padding="18,9" Background="#3978D4" Foreground="White" BorderThickness="0" Click="StartButton_Click"/>
-                    <Button Content="Stop" Padding="18,9" Margin="8,0,0,0" Click="StopButton_Click"/>
+                    <Button x:Name="StartButton" Content="Start preview" Padding="18,9"
+                            Background="#3978D4" Foreground="White" BorderThickness="0"
+                            Click="StartButton_Click"/>
+                    <Button Content="Stop" Padding="18,9" Margin="8,0,0,0"
+                            Click="StopButton_Click"/>
                 </StackPanel>
-                <TextBlock x:Name="StatusText" Text="Status: Ready." TextWrapping="Wrap" Foreground="#F0C674" Margin="0,14,0,0"/>
+                <TextBlock x:Name="StatusText" Text="Status: Ready." TextWrapping="Wrap"
+                           Foreground="#F0C674" Margin="0,14,0,0"/>
             </StackPanel>
         </ScrollViewer>
         <Border Grid.Column="2" Background="#202733" CornerRadius="14" Padding="18">
@@ -73,10 +87,12 @@
                     <TextBlock Text="Live desktop crop preview" FontSize="17" FontWeight="SemiBold"/>
                     <TextBlock Text="GDI SIMULATOR" Foreground="#75B798" DockPanel.Dock="Right"/>
                 </DockPanel>
-                <Border Grid.Row="1" Margin="0,18" Background="#080B10" BorderBrush="#526174" BorderThickness="1" CornerRadius="8" Padding="12">
+                <Border Grid.Row="1" Margin="0,18" Background="#080B10" BorderBrush="#526174"
+                        BorderThickness="1" CornerRadius="8" Padding="12">
                     <Grid>
                         <Image x:Name="PreviewImage" Stretch="Uniform" SnapsToDevicePixels="True"/>
-                        <TextBlock x:Name="PreviewPlaceholder" Text="Press Start preview to capture the center of your primary display."
+                        <TextBlock x:Name="PreviewPlaceholder"
+                                   Text="Select a region, then press Start preview."
                                    Foreground="#65778D" TextWrapping="Wrap" TextAlignment="Center"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    IsHitTestVisible="False"/>
