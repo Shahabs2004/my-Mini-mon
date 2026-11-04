@@ -31,7 +31,8 @@ The software simulator comes first. Hardware purchase, PCB design, and firmware 
 - [ ] Confirm the latest GitHub Actions run is green.
 - [ ] Establish a repeatable local build and test procedure on Windows 10/11.
 - [x] Add automated unit tests for desktop geometry and crop calculations (initial test set; Windows CI result pending).
-- [ ] Add automated tests for tracking selection and protocol framing.
+- [x] Extract and unit-test tracking-point resolution for Fixed, Mouse, Caret, and Automatic modes (CI result pending).
+- [ ] Add automated tests for protocol framing.
 
 ### 3.2 Desktop capture and preview
 - [x] Capture-provider abstraction introduced.
@@ -225,7 +226,8 @@ Do not couple tracking logic to a particular capture API. Do not couple the prev
 
 ### 2026-11-05 — Geometry extraction and initial tests (source committed; CI verification pending)
 - Extracted crop calculation, clamping, centered-region calculation, and virtual-desktop bounding geometry into `Core/ScreenGeometry.cs`.
-- Added `tests/SmartViewCompanion.Tests` with initial xUnit coverage for negative monitor origins, clamping, crop positioning, and centered regions.
+- Extracted Fixed/Mouse/Caret/Automatic tracking-anchor selection into `Core/TrackingPointResolver.cs`; the preview loop now uses this shared logic.
+- Added `tests/SmartViewCompanion.Tests` with xUnit coverage for negative monitor origins, clamping, crop positioning, centered regions, and tracking-mode fallback behavior.
 - Added the test project to the solution and changed Windows CI to run `dotnet test`.
 - The test project and workflow are committed, but package restore, build, and test execution have not yet been confirmed.
 
