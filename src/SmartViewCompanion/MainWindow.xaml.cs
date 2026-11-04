@@ -101,7 +101,20 @@ public partial class MainWindow : Window
 
         _provider = new GdiBitBltCaptureProvider();
         var provider = _provider;
-        var availability = await provider.CheckAvailabilityAsync();
+        CaptureBackendStatus availability;
+        try
+        {
+            availability = await provider.CheckAvailabilityAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"Capture backend check failed: {ex.Message}";
+            await provider.DisposeAsync();
+            _provider = null;
+            StartButton.IsEnabled = true;
+            return;
+        }
+
         if (!availability.IsAvailable)
         {
             StatusText.Text = availability.Message;
