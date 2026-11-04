@@ -36,9 +36,17 @@
                         <TextBlock Text="Fixed region, mouse-pointer, basic Win32 text-caret, and caret-first automatic tracking (mouse fallback) are implemented. Caret detection depends on the target app exposing a standard Win32 caret." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,8,0,0"/>
                     </StackPanel>
                 </GroupBox>
+                <GroupBox Header="Display monitor" Foreground="#E8EDF5" Margin="0,0,0,12" Padding="12">
+                    <StackPanel>
+                        <ComboBox x:Name="DisplayMonitorBox" Height="32"
+                                  SelectionChanged="DisplayMonitorBox_SelectionChanged"/>
+                        <TextBlock Text="Select which physical monitor is used as the capture source. Mixed-DPI behavior still needs validation."
+                                   TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </GroupBox>
                 <GroupBox Header="Capture region" Foreground="#E8EDF5" Margin="0,0,0,12" Padding="12">
                     <StackPanel>
-                        <Button Content="Select region on primary display" Padding="10,8"
+                        <Button Content="Select region on selected display" Padding="10,8"
                                 Click="SelectRegionButton_Click"/>
                         <TextBlock x:Name="RegionInfoText" Text="No region selected · centered default will be used"
                                    Foreground="#AAB6C5" TextWrapping="Wrap" Margin="0,8,0,0"/>
