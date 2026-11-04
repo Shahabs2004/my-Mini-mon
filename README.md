@@ -4,7 +4,7 @@ A Windows companion application for a future USB-powered auxiliary display. The 
 
 ## Project status
 
-**Prototype 0.2 / early development.** The app now has a GDI BitBlt capture provider and a live fixed-region preview. The current crop is taken from the center of the primary display. Automatic currently uses GDI BitBlt because it is the only implemented backend. Windows Graphics Capture, DXGI, mouse tracking, caret tracking, and region selection are not implemented yet.
+**Prototype 0.3 / early development.** The app now has a GDI BitBlt capture provider, a live preview, and a drag-to-select capture rectangle on the primary display. The selected rectangle is cropped to the output aspect ratio and zoom level. Automatic currently uses GDI BitBlt because it is the only implemented backend. Windows Graphics Capture, DXGI, mouse tracking, and caret tracking are not implemented yet.
 
 ## Goals
 
@@ -38,7 +38,7 @@ dotnet build .\SmartViewCompanion.sln
 
 - [x] Initial repository and WPF application shell
 - [x] Working GDI BitBlt capture provider and live fixed-center preview
-- [ ] Fixed-region selection overlay
+- [x] Fixed-region selection overlay (primary display)
 - [ ] Mouse tracking
 - [ ] Windows Graphics Capture provider
 - [ ] DXGI Desktop Duplication provider
