@@ -2,7 +2,7 @@
 
 > **Purpose:** This is the project's central, maintained checklist. Keep it synchronized with the actual source code and verified tests. Mark an item `[x]` only after its implementation exists in the repository and its acceptance criteria have been checked. A committed change is not automatically a tested or verified feature.
 >
-> **Current milestone:** Prototype 0.8 — software preview simulator (virtual-desktop source implemented; DPI validation pending)
+> **Current milestone:** Prototype 0.8 — software preview simulator (virtual-desktop source and geometry test scaffolding implemented; Windows CI verification pending)
 > **Last roadmap review:** 2026-11-05
 > **Repository:** https://github.com/Shahabs2004/my-Mini-mon
 
@@ -30,7 +30,8 @@ The software simulator comes first. Hardware purchase, PCB design, and firmware 
 - [x] GitHub Actions Windows build workflow file added.
 - [ ] Confirm the latest GitHub Actions run is green.
 - [ ] Establish a repeatable local build and test procedure on Windows 10/11.
-- [ ] Add automated unit tests for geometry, crop calculations, tracking selection, and protocol framing.
+- [x] Add automated unit tests for desktop geometry and crop calculations (initial test set; Windows CI result pending).
+- [ ] Add automated tests for tracking selection and protocol framing.
 
 ### 3.2 Desktop capture and preview
 - [x] Capture-provider abstraction introduced.
@@ -122,7 +123,8 @@ The software simulator comes first. Hardware purchase, PCB design, and firmware 
 
 ### 3.8 Documentation, quality, and release
 - [x] Initial README with project purpose, setup, limitations, and roadmap summary.
-- [x] GitHub Actions build workflow definition.
+- [x] GitHub Actions Windows workflow definition.
+- [x] CI workflow invokes the test suite (first run/result pending).
 - [ ] Keep this roadmap and README synchronized.
 - [ ] Add architecture document and component/data-flow diagram.
 - [ ] Add developer setup and troubleshooting guide.
@@ -200,8 +202,8 @@ Do not couple tracking logic to a particular capture API. Do not couple the prev
 
 ## 6. Immediate next tasks (execution order)
 
-1. **Build correctness first:** inspect the current source and fix compile/runtime lifecycle issues; obtain a successful Windows CI build.
-2. **Add automated tests:** isolate crop geometry and tracking-coordinate logic from WPF UI.
+1. **Build correctness first:** obtain a successful Windows CI run for the application and the new geometry test project.
+2. **Expand automated tests:** add tracking-coordinate edge cases, invalid inputs, and protocol framing tests.
 3. **Improve preview lifecycle:** await cancellation/cleanup, prevent overlapping preview loops, and report errors without stale UI updates.
 4. **Validate multi-monitor support:** verify virtual-desktop capture on Windows, normalize mixed-DPI coordinates, and test negative monitor origins and display gaps.
 5. **Implement WGC capture:** add a real provider with capability detection; preserve GDI as a fallback.
@@ -220,6 +222,13 @@ Do not couple tracking logic to a particular capture API. Do not couple the prev
 - Preserve the core requirement: the final device is a USB peripheral, not a Windows secondary monitor.
 
 ## 8. Recent implementation notes
+
+### 2026-11-05 — Geometry extraction and initial tests (source committed; CI verification pending)
+- Extracted crop calculation, clamping, centered-region calculation, and virtual-desktop bounding geometry into `Core/ScreenGeometry.cs`.
+- Added `tests/SmartViewCompanion.Tests` with initial xUnit coverage for negative monitor origins, clamping, crop positioning, and centered regions.
+- Added the test project to the solution and changed Windows CI to run `dotnet test`.
+- The test project and workflow are committed, but package restore, build, and test execution have not yet been confirmed.
+
 
 ### 2026-11-05 — Virtual desktop source (Prototype 0.8; source committed, verification pending)
 - The monitor list now includes a synthetic **Virtual desktop (all monitors)** entry using the union/bounding rectangle of all enumerated monitors.
