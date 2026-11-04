@@ -17,6 +17,20 @@ public static class ScreenGeometry
         return new Rect(x, y, width, height);
     }
 
+    public static Rect GetBoundingBounds(IEnumerable<Rect> rectangles)
+    {
+        ArgumentNullException.ThrowIfNull(rectangles);
+        var items = rectangles.ToArray();
+        if (items.Length == 0)
+            throw new ArgumentException("At least one rectangle is required.", nameof(rectangles));
+
+        double left = items.Min(r => r.Left);
+        double top = items.Min(r => r.Top);
+        double right = items.Max(r => r.Right);
+        double bottom = items.Max(r => r.Bottom);
+        return new Rect(left, top, right - left, bottom - top);
+    }
+
     public static Rect GetCenteredRegion(Rect bounds, double width, double height)
     {
         var desired = new Rect(bounds.Left + (bounds.Width - width) / 2,
