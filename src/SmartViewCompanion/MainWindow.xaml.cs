@@ -214,32 +214,30 @@ public partial class MainWindow : Window
             sourceRegion.Left + sourceRegion.Width / 2,
             sourceRegion.Top + sourceRegion.Height / 2);
         bool caretWasFound = false;
+        TrackingMode trackingMode = trackMouse ? TrackingMode.Mouse
+            : trackCaret ? TrackingMode.Caret
+            : trackAutomatic ? TrackingMode.Automatic
+            : TrackingMode.FixedRegion;
 
         try
         {
             while (!token.IsCancellationRequested)
             {
                 long started = Stopwatch.GetTimestamp();
-                Point? trackingPoint = null;
+                Point? caretPosition = trackCaret || trackAutomatic
+                    ? GetForegroundCaretPosition()
+                    : null;
+                Point? mousePosition = trackMouse || (trackAutomatic && caretPosition is null)
+                    ? GetCursorPosition()
+                    : null;
 
-                if (trackMouse)
-                    trackingPoint = GetCursorPosition();
-                else if (trackCaret || trackAutomatic)
-                {
-                    trackingPoint = GetForegroundCaretPosition();
-                    if (trackingPoint is Point caretPoint)
-                    {
-                        lastCaretPosition = caretPoint;
-                        caretWasFound = true;
-                    }
-                    else if (trackAutomatic)
-                    {
-                        trackingPoint = GetCursorPosition();
-                        caretWasFound = false;
-                    }
-                    else
-                        trackingPoint = lastCaretPosition;
-                }
+                TrackingPointResult tracking = TrackingPointResolver.Resolve(
+                    trackingMode, caretPosition, mousePosition, lastCaretPosition);
+                if (tracking.CaretFound && tracking.Position is Point caretPoint)
+                    lastCaretPosition = caretPoint;
+
+                Point? trackingPoint = tracking.Position;
+                caretWasFound = tracking.CaretFound;
 
                 Rect captureRegion = trackMouse || trackCaret || trackAutomatic
                     ? ScreenGeometry.CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, trackingPoint)
