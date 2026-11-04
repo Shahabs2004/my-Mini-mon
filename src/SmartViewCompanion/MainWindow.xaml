@@ -76,7 +76,7 @@
                 <Border Grid.Row="1" Margin="0,18" Background="#080B10" BorderBrush="#526174" BorderThickness="1" CornerRadius="8" Padding="12">
                     <Grid>
                         <Image x:Name="PreviewImage" Stretch="Uniform" SnapsToDevicePixels="True"/>
-                        <TextBlock Text="Press Start preview to capture the center of your primary display."
+                        <TextBlock x:Name="PreviewPlaceholder" Text="Press Start preview to capture the center of your primary display."
                                    Foreground="#65778D" TextWrapping="Wrap" TextAlignment="Center"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    IsHitTestVisible="False"/>
