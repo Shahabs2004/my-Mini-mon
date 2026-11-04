@@ -3,9 +3,11 @@ using System.Windows;
 
 namespace SmartViewCompanion.Core;
 
-public sealed record DisplayMonitorInfo(string DeviceName, Rect Bounds, bool IsPrimary)
+public sealed record DisplayMonitorInfo(string DeviceName, Rect Bounds, bool IsPrimary, bool IsVirtualDesktop = false)
 {
-    public string DisplayName => $"{DeviceName} — {Bounds.Width:0} × {Bounds.Height:0}{(IsPrimary ? " (Primary)" : "")}";
+    public string DisplayName => IsVirtualDesktop
+        ? $"{DeviceName} — {Bounds.Width:0} × {Bounds.Height:0}"
+        : $"{DeviceName} — {Bounds.Width:0} × {Bounds.Height:0}{(IsPrimary ? " (Primary)" : "")}";
     public override string ToString() => DisplayName;
 }
 
@@ -40,9 +42,23 @@ public static class DisplayMonitorService
         if (!EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, callback, IntPtr.Zero))
             throw new InvalidOperationException("Windows could not enumerate desktop monitors.");
 
-        return monitors
-            .OrderByDescending(m => m.IsPrimary)
-            .ThenBy(m => m.DeviceName, StringComparer.OrdinalIgnoreCase)
+        if (monitors.Count == 0)
+            return Array.Empty<DisplayMonitorInfo>();
+
+        double left = monitors.Min(m => m.Bounds.Left);
+        double top = monitors.Min(m => m.Bounds.Top);
+        double right = monitors.Max(m => m.Bounds.Right);
+        double bottom = monitors.Max(m => m.Bounds.Bottom);
+        var virtualDesktop = new DisplayMonitorInfo(
+            "Virtual desktop (all monitors)",
+            new Rect(left, top, right - left, bottom - top),
+            false,
+            true);
+
+        return new[] { virtualDesktop }
+            .Concat(monitors
+                .OrderByDescending(m => m.IsPrimary)
+                .ThenBy(m => m.DeviceName, StringComparer.OrdinalIgnoreCase))
             .ToArray();
     }
 
