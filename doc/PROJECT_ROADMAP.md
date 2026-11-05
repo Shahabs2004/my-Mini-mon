@@ -2,7 +2,7 @@
 
 > **Purpose:** This is the project's central, maintained checklist. Keep it synchronized with the actual source code and verified tests. Mark an item `[x]` only after its implementation exists in the repository and its acceptance criteria have been checked. A committed change is not automatically a tested or verified feature.
 >
-> **Current milestone:** Prototype 0.8 — software preview simulator (virtual-desktop source and geometry test scaffolding implemented; Windows CI verification pending)
+> **Current milestone:** Prototype 0.9 — software preview simulator plus idle Photo Frame prototype (source committed; Windows build/runtime verification pending)
 > **Last roadmap review:** 2026-11-05
 > **Repository:** https://github.com/Shahabs2004/my-Mini-mon
 
@@ -73,6 +73,15 @@ The software simulator comes first. Hardware purchase, PCB design, and firmware 
 - [ ] Keyboard shortcuts to start/stop capture and switch tracking modes.
 
 ### 3.4 User experience and settings
+- [x] Separate Photo Frame prototype window for idle-time slideshow (source implemented; Windows validation pending).
+- [x] Add multiple image files and recursively scan one or more folders for supported image formats.
+- [x] Detect system-wide keyboard/mouse inactivity using Win32 GetLastInputInfo.
+- [x] Configure idle delay, slide duration, and Fit/Fill image scaling.
+- [x] Persist photo-frame source paths and preferences under %LocalAppData%\\SmartViewCompanion\\photo-frame.json.
+- [ ] Integrate Photo Frame as a mode of the shared frame-composition/output pipeline (current prototype runs in a separate simulator window).
+- [ ] Add remove-source/clear-library controls and shuffle/random ordering.
+- [ ] Add robust handling for inaccessible folders and very large libraries without blocking the UI.
+- [ ] Add slideshow unit tests and Windows runtime tests.
 - [x] Capture API selector (Automatic, WGC, DXGI, GDI BitBlt).
 - [x] Tracking mode selector (Fixed Region, Mouse, Caret, Automatic).
 - [x] Resolution, FPS, zoom, and portrait controls.
@@ -223,6 +232,14 @@ Do not couple tracking logic to a particular capture API. Do not couple the prev
 - Preserve the core requirement: the final device is a USB peripheral, not a Windows secondary monitor.
 
 ## 8. Recent implementation notes
+
+### 2026-11-05 — Idle Photo Frame prototype (Prototype 0.9; source committed, verification pending)
+- Added a separate Photo Frame simulator window, launched from the main application.
+- Users can add multiple image files or one/more folders; folder sources are scanned recursively for supported formats (JPEG, PNG, BMP, GIF, TIFF, and WDP).
+- System-wide inactivity is detected with Win32 GetLastInputInfo. The slideshow begins after the configurable idle delay and pauses when keyboard or mouse activity resumes.
+- Added configurable slide duration and Fit (preserve full image) / Fill (crop edges) presentation.
+- Source paths and preferences are saved to %LocalAppData%\\SmartViewCompanion\\photo-frame.json.
+- This is an initial simulator implementation, not yet connected to the shared preview/USB output pipeline. Build, Windows runtime, large-library performance, and inaccessible-folder behavior still require validation.
 
 ### 2026-11-05 — Geometry extraction and initial tests (source committed; CI verification pending)
 - Extracted crop calculation, clamping, centered-region calculation, and virtual-desktop bounding geometry into `Core/ScreenGeometry.cs`.
