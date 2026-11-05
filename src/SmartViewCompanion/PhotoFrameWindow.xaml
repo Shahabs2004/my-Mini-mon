@@ -1,0 +1,53 @@
+<Window x:Class="SmartViewCompanion.PhotoFrameWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SmartView Companion — Photo Frame" Height="760" Width="1100"
+        MinHeight="600" MinWidth="850" Background="#151B23" Foreground="#E8EDF5"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="18">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <Border Background="#202733" CornerRadius="10" Padding="12" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="PHOTO FRAME" FontSize="18" FontWeight="Bold"/>
+                <WrapPanel Margin="0,10,0,0" VerticalAlignment="Center">
+                    <Button Content="Add photos…" Click="AddFiles_Click" Padding="12,7" Margin="0,0,8,0"/>
+                    <Button Content="Add folder…" Click="AddFolder_Click" Padding="12,7" Margin="0,0,14,0"/>
+                    <TextBlock Text="Start after idle:" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="IdleMinutesBox" Width="90" Margin="6,0,14,0" SelectedIndex="1">
+                        <ComboBoxItem Content="1 min" Tag="1"/><ComboBoxItem Content="2 min" Tag="2"/>
+                        <ComboBoxItem Content="5 min" Tag="5"/><ComboBoxItem Content="10 min" Tag="10"/>
+                        <ComboBoxItem Content="15 min" Tag="15"/>
+                    </ComboBox>
+                    <TextBlock Text="Slide duration:" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="SlideSecondsBox" Width="90" Margin="6,0,14,0" SelectedIndex="1">
+                        <ComboBoxItem Content="5 sec" Tag="5"/><ComboBoxItem Content="10 sec" Tag="10"/>
+                        <ComboBoxItem Content="20 sec" Tag="20"/><ComboBoxItem Content="30 sec" Tag="30"/>
+                        <ComboBoxItem Content="60 sec" Tag="60"/>
+                    </ComboBox>
+                    <TextBlock Text="Image fit:" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="FitModeBox" Width="120" Margin="6,0,0,0" SelectedIndex="0">
+                        <ComboBoxItem Content="Fit (no crop)" Tag="Uniform"/>
+                        <ComboBoxItem Content="Fill (crop edges)" Tag="UniformToFill"/>
+                    </ComboBox>
+                </WrapPanel>
+                <DockPanel Margin="0,10,0,0">
+                    <TextBlock x:Name="SourcesText" Text="No photo sources selected." Foreground="#AAB6C5" TextWrapping="Wrap"/>
+                    <Button Content="Save settings" Click="SaveSettings_Click" Padding="12,6" DockPanel.Dock="Right" Margin="12,0,0,0"/>
+                </DockPanel>
+            </StackPanel>
+        </Border>
+        <Border Grid.Row="1" Background="#080B10" BorderBrush="#526174" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+            <Grid>
+                <Image x:Name="PhotoImage" Stretch="Uniform"/>
+                <Border Background="#B0151B23" Padding="18" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="8">
+                    <TextBlock x:Name="OverlayText" Text="Choose photos or folders. The slideshow starts when the PC is idle."
+                               TextAlignment="Center" TextWrapping="Wrap" FontSize="18"/>
+                </Border>
+            </Grid>
+        </Border>
+        <DockPanel Grid.Row="2" Margin="0,10,0,0">
+            <TextBlock x:Name="StatusText" Text="Photo frame is ready." Foreground="#F0C674"/>
+            <TextBlock x:Name="CountText" Text="0 images" Foreground="#AAB6C5" DockPanel.Dock="Right"/>
+        </DockPanel>
+    </Grid>
+</Window>
