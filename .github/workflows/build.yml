@@ -1,4 +1,4 @@
-name: Build SmartView Companion
+name: Windows Build and Test
 
 on:
   push:
@@ -7,17 +7,51 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
+    name: Restore, build and test (.NET 8 / Windows)
     runs-on: windows-latest
+    timeout-minutes: 20
+
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Setup .NET 8
+      - name: Install .NET 8 SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Build and test solution
-        run: dotnet test .\SmartViewCompanion.sln --configuration Release
+      - name: Restore solution
+        run: dotnet restore .\SmartViewCompanion.sln
+
+      - name: Build solution (Release)
+        run: dotnet build .\SmartViewCompanion.sln --configuration Release --no-restore
+
+      - name: Run automated tests
+        run: dotnet test .\SmartViewCompanion.sln --configuration Release --no-build --no-restore --logger "trx;LogFileName=smartview-tests.trx" --results-directory .\TestResults
+
+      - name: Upload application build
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartViewCompanion-windows-net8
+          path: src/SmartViewCompanion/bin/Release/net8.0-windows/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartViewCompanion-test-results
+          path: TestResults/
+          if-no-files-found: ignore
+          retention-days: 14
