@@ -1,3 +1,9 @@
+### 2026-11-05 — CI hardening and branch protection guidance
+- The Windows workflow now preserves the compiled application artifact whenever the build step succeeds, even if the later automated test step fails.
+- Added a CI status badge to README and documented the recommended main-branch protection configuration in doc/GITHUB_BRANCH_PROTECTION.md.
+- The repository API currently reports no active rulesets; the branch-protection endpoint is not writable/readable through the connected GitHub integration. Enabling the rule therefore remains a manual repository-admin action.
+- The latest commit has no reported status checks yet. Do not mark the workflow or required-check gate as passing until the first Actions run is visible and verified.
+
 ### 2026-11-05 — Windows CI build workflow
 - Reworked .github/workflows/build.yml into explicit Restore → Release Build → Test stages on windows-latest with .NET 8.
 - Workflow runs on pushes to main, pull requests targeting main, and manual dispatch.
@@ -79,6 +85,9 @@ The software simulator comes first. Hardware purchase, PCB design, and firmware 
 - [ ] Keyboard shortcuts to start/stop capture and switch tracking modes.
 
 ### 3.4 User experience and settings
+- [x] CI status badge and branch-protection setup guide added.
+- [ ] Enable GitHub branch protection/ruleset for main and require the Windows Build and Test status check (manual repository-admin action; check must appear after first successful/observed workflow run).
+
 - [x] GitHub Actions Windows workflow performs explicit .NET restore, Release build, and automated test steps; uploads application output and test results (workflow committed; run result must be checked in Actions).
 
 - [x] Separate Photo Frame prototype window for idle-time slideshow (source implemented; Windows validation pending).
