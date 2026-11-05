@@ -1,3 +1,9 @@
+### 2026-11-05 — Preview uses native output dimensions
+- Changed the live preview image from Stretch=Uniform to a 1:1 pixel presentation so a 320×240 output is shown at 320×240 WPF device-independent units rather than being enlarged to fill the preview panel.
+- Added scrollbars for larger portrait/landscape output sizes and display of the selected output dimensions in the capture status.
+- Added a UI hint explaining that 1× zoom uses the widest crop matching the selected output aspect ratio; increasing zoom narrows the tracked crop.
+- Source changes are committed; Windows rebuild and interactive validation are pending.
+
 ### 2026-11-05 — Fix missing System.IO import in photo-frame tests
 - Added an explicit `using System.IO;` to `PhotoFrameLibraryTests.cs` for `Path`, `Directory`, and `File`.
 - The application project compiled successfully in the user's latest local build; the test project still failed at compile time due to this missing import.
