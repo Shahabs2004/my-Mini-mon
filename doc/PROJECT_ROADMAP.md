@@ -1,3 +1,8 @@
+### 2026-11-05 — Make dynamic tracking start with a close-up crop
+- Root cause identified: dynamic tracking uses the entire selected monitor as its source region, while the Zoom slider defaulted to 1×. At 1×, the crop therefore spans almost the whole monitor (subject only to output aspect-ratio trimming); pointer/caret tracking moves the crop center but does not create a close-up.
+- Changed the default zoom to 3× and clarified that 1× is the widest/near-full-monitor view. Users can choose 4× for a tighter crop.
+- This is a UI default adjustment, not proof of runtime pointer/caret accuracy. Rebuild and test on Windows, then verify Mouse and Automatic modes by moving the pointer with Zoom at 3× or 4×.
+
 ### 2026-11-05 — Preview uses native output dimensions
 - Changed the live preview image from Stretch=Uniform to a 1:1 pixel presentation so a 320×240 output is shown at 320×240 WPF device-independent units rather than being enlarged to fill the preview panel.
 - Added scrollbars for larger portrait/landscape output sizes and display of the selected output dimensions in the capture status.
