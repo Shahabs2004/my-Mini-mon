@@ -1,3 +1,9 @@
+### 2026-11-05 — Windows CI build workflow
+- Reworked .github/workflows/build.yml into explicit Restore → Release Build → Test stages on windows-latest with .NET 8.
+- Workflow runs on pushes to main, pull requests targeting main, and manual dispatch.
+- On success, compiled application output is uploaded as a 14-day artifact; test results are uploaded separately even if a test step fails.
+- A workflow commit is not proof of a successful build. Confirm the run in the repository Actions tab before marking the CI exit criterion verified.
+
 # SmartView Companion — Project Roadmap & Progress
 
 > **Purpose:** This is the project's central, maintained checklist. Keep it synchronized with the actual source code and verified tests. Mark an item `[x]` only after its implementation exists in the repository and its acceptance criteria have been checked. A committed change is not automatically a tested or verified feature.
@@ -73,6 +79,8 @@ The software simulator comes first. Hardware purchase, PCB design, and firmware 
 - [ ] Keyboard shortcuts to start/stop capture and switch tracking modes.
 
 ### 3.4 User experience and settings
+- [x] GitHub Actions Windows workflow performs explicit .NET restore, Release build, and automated test steps; uploads application output and test results (workflow committed; run result must be checked in Actions).
+
 - [x] Separate Photo Frame prototype window for idle-time slideshow (source implemented; Windows validation pending).
 - [x] Add multiple image files and recursively scan one or more folders for supported image formats.
 - [x] Detect system-wide keyboard/mouse inactivity using Win32 GetLastInputInfo.
