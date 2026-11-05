@@ -55,6 +55,12 @@ public partial class MainWindow : Window
             ?? DisplayMonitorService.GetMonitors().First(m => m.IsPrimary);
     }
 
+    private void PhotoFrameButton_Click(object sender, RoutedEventArgs e)
+    {
+        var photoFrame = new PhotoFrameWindow { Owner = this };
+        photoFrame.ShowDialog();
+    }
+
     private void DisplayMonitorBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         _selectedRegion = null;
