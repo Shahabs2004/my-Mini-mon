@@ -32,18 +32,18 @@ public sealed class ScreenGeometryTests
     }
 
     [Fact]
-    public void CalculateCrop_ClampsTrackingPointToVirtualDesktopBounds()
+    public void CalculateCrop_UsesOutputPixelDimensionsAndClampsTrackingPoint()
     {
         var virtualDesktop = new Rect(-1600, -200, 3520, 1280);
         var requestedCenter = new Point(1900, 900);
 
         Rect result = ScreenGeometry.CalculateCrop(
-            virtualDesktop, 480, 320, 2.0, requestedCenter);
+            virtualDesktop, 480, 320, requestedCenter);
 
         Assert.True(virtualDesktop.Contains(result.TopLeft));
         Assert.True(virtualDesktop.Contains(result.BottomRight));
-        Assert.True(result.Width > 0);
-        Assert.True(result.Height > 0);
+        Assert.Equal(480, result.Width);
+        Assert.Equal(320, result.Height);
     }
 
     [Fact]
