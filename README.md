@@ -1,3 +1,7 @@
+## Continuous integration
+
+GitHub Actions runs on every push to `main`, pull request targeting `main`, or manual dispatch. The Windows runner restores the solution, builds the full solution in Release configuration, and then runs the automated tests. On success, the compiled application output is uploaded as the `SmartViewCompanion-windows-net8` artifact; test results are uploaded separately when available. Open the repository's **Actions** tab to inspect compiler errors and download artifacts.
+
 # SmartView Companion
 
 A Windows companion application for a future USB-powered auxiliary display. The current milestone is a software simulator: capture a region of the desktop, track the mouse or a supported text caret, transform the image, and show it in a preview window.
