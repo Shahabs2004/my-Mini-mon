@@ -78,7 +78,7 @@ The software simulator comes first. Hardware purchase, PCB design, and firmware 
 - [x] Live preview loop with cancellation and target-FPS setting.
 - [x] Output resolution presets (320×240, 480×320, 480×800).
 - [x] Portrait output option.
-- [x] Zoom control.
+- [x] Pixel-for-pixel output crop (one desktop pixel per output pixel); zoom control removed.
 - [x] Crop fitted to output aspect ratio.
 - [x] Best-effort request to exclude the app window from capture using `WDA_EXCLUDEFROMCAPTURE`.
 - [ ] Verify capture exclusion on supported Windows versions; current behavior is best-effort only.
@@ -128,7 +128,7 @@ The software simulator comes first. Hardware purchase, PCB design, and firmware 
 - [ ] Add slideshow unit tests and Windows runtime tests.
 - [x] Capture API selector (Automatic, WGC, DXGI, GDI BitBlt).
 - [x] Tracking mode selector (Fixed Region, Mouse, Caret, Automatic).
-- [x] Resolution, FPS, zoom, and portrait controls.
+- [x] Preset/custom resolution, FPS, and portrait controls; zoom removed.
 - [x] Status text for unsupported capture/tracking modes.
 - [ ] Validate every setting and show actionable error messages.
 - [ ] Persist settings between application launches.
@@ -276,6 +276,12 @@ Do not couple tracking logic to a particular capture API. Do not couple the prev
 - Preserve the core requirement: the final device is a USB peripheral, not a Windows secondary monitor.
 
 ## 8. Recent implementation notes
+
+### 2026-11-05 — 1:1 output, custom resolution, and monitor tracking scope
+- Removed the zoom slider and zoom factor from capture. Tracking now moves an output-sized pixel crop (one desktop pixel per output pixel); if the source area is smaller than the requested output, the existing output-resize fallback may enlarge it.
+- Added a Custom resolution option with width/height validation from 1 to 8192 pixels. Presets and portrait orientation remain available.
+- Selecting a physical monitor confines the tracking crop to that monitor; selecting Virtual desktop (all monitors) lets mouse/caret tracking follow across the combined desktop bounds. Display gaps may be blank and mixed-DPI behavior remains unverified.
+- Added geometry test coverage for output-sized pixel crops. Windows build/runtime validation is pending.
 
 ### 2026-11-05 — Capture-provider interface cleanup
 - The main preview lifecycle now stores and consumes IFrameCaptureProvider rather than depending on GdiBitBltCaptureProvider directly.
