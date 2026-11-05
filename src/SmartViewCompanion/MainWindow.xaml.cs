@@ -194,7 +194,7 @@ public partial class MainWindow : Window
         _previewCts = new CancellationTokenSource();
         _frameCount = 0;
         _fpsClock.Restart();
-        CaptureInfoText.Text = "Capture: GDI BitBlt";
+        CaptureInfoText.Text = $"Capture: GDI BitBlt · Output: {outputWidth} × {outputHeight} px";
         StatusText.Text = trackingIndex switch
         {
             1 => $"Mouse tracking active: {outputWidth} × {outputHeight} at {targetFps} FPS.",
