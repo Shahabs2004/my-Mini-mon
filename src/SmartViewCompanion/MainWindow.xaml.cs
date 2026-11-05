@@ -13,7 +13,7 @@ public partial class MainWindow : Window
 {
     private CancellationTokenSource? _previewCts;
     private Task? _previewTask;
-    private GdiBitBltCaptureProvider? _provider;
+    private IFrameCaptureProvider? _provider;
     private Rect? _selectedRegion;
     private long _frameCount;
     private readonly Stopwatch _fpsClock = Stopwatch.StartNew();
@@ -211,7 +211,7 @@ public partial class MainWindow : Window
     }
 
     private async Task PreviewLoopAsync(
-        GdiBitBltCaptureProvider provider, Rect sourceRegion, Rect fixedCaptureRegion,
+        IFrameCaptureProvider provider, Rect sourceRegion, Rect fixedCaptureRegion,
         int outputWidth, int outputHeight, int targetFps, double zoom,
         bool trackMouse, bool trackCaret, bool trackAutomatic, CancellationToken token)
     {
