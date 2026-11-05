@@ -1,3 +1,8 @@
+### 2026-11-05 — Fix compiler errors reported by first local build
+- Added the missing `System.Windows.Controls` import to `RegionSelectionWindow.xaml.cs` so `Canvas` resolves.
+- Added the missing `System.IO` import to `PhotoFrameWindow.xaml.cs` so `Path`, `Directory`, and `IOException` resolve.
+- Fixes committed to `main`; waiting for a fresh Windows CI run and the user's next local build to confirm there are no further compiler errors.
+
 ### 2026-11-05 — CI hardening and branch protection guidance
 - The Windows workflow now preserves the compiled application artifact whenever the build step succeeds, even if the later automated test step fails.
 - Added a CI status badge to README and documented the recommended main-branch protection configuration in doc/GITHUB_BRANCH_PROTECTION.md.
