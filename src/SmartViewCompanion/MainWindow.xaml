@@ -40,7 +40,7 @@
                     <StackPanel>
                         <ComboBox x:Name="DisplayMonitorBox" Height="32"
                                   SelectionChanged="DisplayMonitorBox_SelectionChanged"/>
-                        <TextBlock Text="Choose one monitor or Virtual desktop (all monitors). Virtual-desktop capture uses the combined desktop bounds; gaps between displays may contain blank pixels. Mixed-DPI behavior still needs validation."
+                        <TextBlock Text="Select one monitor to confine tracking, or Virtual desktop (all monitors) to follow the pointer/caret across displays. Gaps may appear blank; mixed-DPI behavior still needs validation."
                                    TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,8,0,0"/>
                     </StackPanel>
                 </GroupBox>
@@ -56,12 +56,18 @@
                 </GroupBox>
                 <GroupBox Header="Output" Foreground="#E8EDF5" Margin="0,0,0,12" Padding="12">
                     <StackPanel>
-                        <TextBlock Text="Resolution"/>
-                        <ComboBox x:Name="ResolutionBox" SelectedIndex="1" Height="32" Margin="0,5,0,10">
+                        <TextBlock Text="Output resolution"/>
+                        <ComboBox x:Name="ResolutionBox" SelectedIndex="1" Height="32" Margin="0,5,0,8" SelectionChanged="ResolutionBox_SelectionChanged">
                             <ComboBoxItem Content="320 × 240"/>
                             <ComboBoxItem Content="480 × 320"/>
                             <ComboBoxItem Content="480 × 800"/>
+                            <ComboBoxItem Content="Custom"/>
                         </ComboBox>
+                        <Grid x:Name="CustomResolutionPanel" Visibility="Collapsed" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <StackPanel><TextBlock Text="Width (px)" Foreground="#AAB6C5"/><TextBox x:Name="CustomWidthBox" Text="480" Height="30" Margin="0,4,0,0"/></StackPanel>
+                            <StackPanel Grid.Column="2"><TextBlock Text="Height (px)" Foreground="#AAB6C5"/><TextBox x:Name="CustomHeightBox" Text="320" Height="30" Margin="0,4,0,0"/></StackPanel>
+                        </Grid>
                         <TextBlock Text="Target frame rate"/>
                         <ComboBox x:Name="FpsBox" SelectedIndex="1" Height="32" Margin="0,5,0,10">
                             <ComboBoxItem Content="5 FPS"/>
@@ -70,10 +76,7 @@
                             <ComboBoxItem Content="30 FPS"/>
                             <ComboBoxItem Content="60 FPS"/>
                         </ComboBox>
-                        <TextBlock Text="Zoom"/>
-                        <TextBlock Text="1× shows almost the entire monitor. Tracking modes use a 3× close-up by default; increase to 4× for a tighter crop." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,0,0,5"/>
-                        <Slider x:Name="ZoomSlider" Minimum="1" Maximum="4" Value="3"
-                                TickFrequency="0.25" IsSnapToTickEnabled="True"/>
+                        <TextBlock Text="Pixel mapping: 1 source pixel = 1 output pixel" TextWrapping="Wrap" Foreground="#75B798" Margin="0,0,0,5"/>
                         <TextBlock Text="Orientation"/>
                         <CheckBox x:Name="PortraitCheckBox" Content="Portrait output" Margin="0,5,0,0"/>
                     </StackPanel>
