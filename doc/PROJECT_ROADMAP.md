@@ -1,3 +1,8 @@
+### 2026-11-05 — Fix test-project xUnit import and duplicate using warning
+- Added the explicit `using Xunit;` directive to `PhotoFrameLibraryTests.cs`, resolving the reported `FactAttribute` / `Fact` compile errors.
+- Removed the duplicate `using System.Windows.Media;` directive from `RegionSelectionWindow.xaml.cs`.
+- Changes are committed to `main`; the user's next local Release build and test run are still required to verify the complete solution.
+
 ### 2026-11-05 — Fix compiler errors reported by first local build
 - Added the missing `System.Windows.Controls` import to `RegionSelectionWindow.xaml.cs` so `Canvas` resolves.
 - Added the missing `System.IO` import to `PhotoFrameWindow.xaml.cs` so `Path`, `Directory`, and `IOException` resolve.
