@@ -23,7 +23,6 @@ public static class ScreenGeometry
         var items = rectangles.ToArray();
         if (items.Length == 0)
             throw new ArgumentException("At least one rectangle is required.", nameof(rectangles));
-
         double left = items.Min(r => r.Left);
         double top = items.Min(r => r.Top);
         double right = items.Max(r => r.Right);
@@ -38,22 +37,15 @@ public static class ScreenGeometry
         return ClampToBounds(desired, bounds);
     }
 
-    public static Rect CalculateCrop(Rect source, int outputWidth, int outputHeight, double zoom, Point? requestedCenter)
+    /// <summary>Returns an output-sized crop with one desktop pixel per output pixel.</summary>
+    public static Rect CalculateCrop(Rect source, int outputWidth, int outputHeight, Point? requestedCenter)
     {
         if (source.IsEmpty || source.Width <= 0 || source.Height <= 0)
             throw new ArgumentOutOfRangeException(nameof(source));
         if (outputWidth <= 0 || outputHeight <= 0)
             throw new ArgumentOutOfRangeException(nameof(outputWidth), "Output dimensions must be positive.");
-        if (!double.IsFinite(zoom) || zoom <= 0)
-            throw new ArgumentOutOfRangeException(nameof(zoom), "Zoom must be finite and positive.");
-
-        double aspect = (double)outputWidth / outputHeight;
-        double width = source.Width;
-        double height = source.Height;
-        if (width / height > aspect) width = height * aspect;
-        else height = width / aspect;
-        width = Math.Max(1, width / zoom);
-        height = Math.Max(1, height / zoom);
+        double width = Math.Min(outputWidth, source.Width);
+        double height = Math.Min(outputHeight, source.Height);
         Point center = requestedCenter ?? new Point(source.Left + source.Width / 2, source.Top + source.Height / 2);
         return ClampToBounds(new Rect(center.X - width / 2, center.Y - height / 2, width, height), source);
     }
