@@ -71,6 +71,7 @@
                             <ComboBoxItem Content="60 FPS"/>
                         </ComboBox>
                         <TextBlock Text="Zoom"/>
+                        <TextBlock Text="1× shows the widest crop matching the output aspect ratio; increase zoom to focus closer." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,0,0,5"/>
                         <Slider x:Name="ZoomSlider" Minimum="1" Maximum="4" Value="1"
                                 TickFrequency="0.25" IsSnapToTickEnabled="True"/>
                         <TextBlock Text="Orientation"/>
@@ -94,13 +95,17 @@
             <Grid>
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <DockPanel>
-                    <TextBlock Text="Live desktop crop preview" FontSize="17" FontWeight="SemiBold"/>
+                    <TextBlock Text="Device-resolution preview (1:1 pixels)" FontSize="17" FontWeight="SemiBold"/>
                     <TextBlock Text="GDI SIMULATOR" Foreground="#75B798" DockPanel.Dock="Right"/>
                 </DockPanel>
                 <Border Grid.Row="1" Margin="0,18" Background="#080B10" BorderBrush="#526174"
                         BorderThickness="1" CornerRadius="8" Padding="12">
                     <Grid>
-                        <Image x:Name="PreviewImage" Stretch="Uniform" SnapsToDevicePixels="True"/>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                              HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                            <Image x:Name="PreviewImage" Stretch="None" SnapsToDevicePixels="True"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </ScrollViewer>
                         <TextBlock x:Name="PreviewPlaceholder"
                                    Text="Select a region, then press Start preview."
                                    Foreground="#65778D" TextWrapping="Wrap" TextAlignment="Center"
