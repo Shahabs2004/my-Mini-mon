@@ -1,3 +1,4 @@
+using System.IO;
 using SmartViewCompanion.Core;
 using Xunit;
 
