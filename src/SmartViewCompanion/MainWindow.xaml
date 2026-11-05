@@ -71,8 +71,8 @@
                             <ComboBoxItem Content="60 FPS"/>
                         </ComboBox>
                         <TextBlock Text="Zoom"/>
-                        <TextBlock Text="1× shows the widest crop matching the output aspect ratio; increase zoom to focus closer." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,0,0,5"/>
-                        <Slider x:Name="ZoomSlider" Minimum="1" Maximum="4" Value="1"
+                        <TextBlock Text="1× shows almost the entire monitor. Tracking modes use a 3× close-up by default; increase to 4× for a tighter crop." TextWrapping="Wrap" Foreground="#AAB6C5" Margin="0,0,0,5"/>
+                        <Slider x:Name="ZoomSlider" Minimum="1" Maximum="4" Value="3"
                                 TickFrequency="0.25" IsSnapToTickEnabled="True"/>
                         <TextBlock Text="Orientation"/>
                         <CheckBox x:Name="PortraitCheckBox" Content="Portrait output" Margin="0,5,0,0"/>
