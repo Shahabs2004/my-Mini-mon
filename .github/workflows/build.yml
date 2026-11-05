@@ -33,13 +33,14 @@ jobs:
         run: dotnet restore .\SmartViewCompanion.sln
 
       - name: Build solution (Release)
+        id: build
         run: dotnet build .\SmartViewCompanion.sln --configuration Release --no-restore
 
       - name: Run automated tests
         run: dotnet test .\SmartViewCompanion.sln --configuration Release --no-build --no-restore --logger "trx;LogFileName=smartview-tests.trx" --results-directory .\TestResults
 
       - name: Upload application build
-        if: success()
+        if: always() && steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: SmartViewCompanion-windows-net8
