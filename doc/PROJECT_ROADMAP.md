@@ -35,7 +35,7 @@ The software simulator comes first. Hardware purchase, PCB design, and firmware 
 - [ ] Add automated tests for protocol framing.
 
 ### 3.2 Desktop capture and preview
-- [x] Capture-provider abstraction introduced.
+- [x] Capture-provider abstraction introduced and consumed through IFrameCaptureProvider by the preview lifecycle.
 - [x] GDI BitBlt capture provider implemented.
 - [x] Live preview loop with cancellation and target-FPS setting.
 - [x] Output resolution presets (320×240, 480×320, 480×800).
@@ -79,6 +79,7 @@ The software simulator comes first. Hardware purchase, PCB design, and firmware 
 - [x] Configure idle delay, slide duration, and Fit/Fill image scaling.
 - [x] Persist photo-frame source paths and preferences under %LocalAppData%\\SmartViewCompanion\\photo-frame.json.
 - [ ] Integrate Photo Frame as a mode of the shared frame-composition/output pipeline (current prototype runs in a separate simulator window).
+- [x] Add initial photo-library enumeration tests (Windows CI execution pending).
 - [ ] Add remove-source/clear-library controls and shuffle/random ordering.
 - [ ] Add robust handling for inaccessible folders and very large libraries without blocking the UI.
 - [ ] Add slideshow unit tests and Windows runtime tests.
@@ -232,6 +233,10 @@ Do not couple tracking logic to a particular capture API. Do not couple the prev
 - Preserve the core requirement: the final device is a USB peripheral, not a Windows secondary monitor.
 
 ## 8. Recent implementation notes
+
+### 2026-11-05 — Capture-provider interface cleanup
+- The main preview lifecycle now stores and consumes IFrameCaptureProvider rather than depending on GdiBitBltCaptureProvider directly.
+- GDI remains the only implemented backend; this change prepares the preview loop for additional providers without claiming WGC or DXGI support.
 
 ### 2026-11-05 — Idle Photo Frame prototype (Prototype 0.9; source committed, verification pending)
 - Added a separate Photo Frame simulator window, launched from the main application.
