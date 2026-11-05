@@ -55,8 +55,9 @@ public partial class MainWindow : Window
             ?? DisplayMonitorService.GetMonitors().First(m => m.IsPrimary);
     }
 
-    private void PhotoFrameButton_Click(object sender, RoutedEventArgs e)
+    private async void PhotoFrameButton_Click(object sender, RoutedEventArgs e)
     {
+        await StopPreviewAsync();
         var photoFrame = new PhotoFrameWindow { Owner = this };
         photoFrame.ShowDialog();
     }
