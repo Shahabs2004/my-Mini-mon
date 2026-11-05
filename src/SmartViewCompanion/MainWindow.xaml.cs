@@ -62,6 +62,12 @@ public partial class MainWindow : Window
         photoFrame.ShowDialog();
     }
 
+    private void ResolutionBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (CustomResolutionPanel is not null)
+            CustomResolutionPanel.Visibility = ResolutionBox.SelectedIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
     private void DisplayMonitorBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         _selectedRegion = null;
@@ -172,6 +178,16 @@ public partial class MainWindow : Window
         {
             case 0: outputWidth = 320; outputHeight = 240; break;
             case 2: outputWidth = 480; outputHeight = 800; break;
+            case 3:
+                if (!int.TryParse(CustomWidthBox.Text, out outputWidth) ||
+                    !int.TryParse(CustomHeightBox.Text, out outputHeight) ||
+                    outputWidth < 1 || outputHeight < 1 || outputWidth > 8192 || outputHeight > 8192)
+                {
+                    StatusText.Text = "Custom resolution must use whole-pixel values from 1 to 8192.";
+                    StartButton.IsEnabled = true;
+                    return;
+                }
+                break;
             default: outputWidth = 480; outputHeight = 320; break;
         }
 
@@ -180,7 +196,6 @@ public partial class MainWindow : Window
 
         string fpsText = (FpsBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "10 FPS";
         int targetFps = int.TryParse(fpsText.Split(' ')[0], out int parsedFps) ? parsedFps : 10;
-        double zoom = Math.Max(1.0, ZoomSlider.Value);
 
         bool trackMouse = trackingIndex == 1;
         bool trackCaret = trackingIndex == 2;
@@ -189,7 +204,7 @@ public partial class MainWindow : Window
         Rect sourceRegion = trackMouse || trackCaret || trackAutomatic
             ? monitorBounds
             : (_selectedRegion is Rect selected ? ScreenGeometry.ClampToBounds(selected, monitorBounds) : ScreenGeometry.GetCenteredRegion(monitorBounds, outputWidth, outputHeight));
-        Rect captureRegion = ScreenGeometry.CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, null);
+        Rect captureRegion = ScreenGeometry.CalculateCrop(sourceRegion, outputWidth, outputHeight, null);
 
         _previewCts = new CancellationTokenSource();
         _frameCount = 0;
@@ -208,12 +223,12 @@ public partial class MainWindow : Window
         var token = _previewCts.Token;
         _previewTask = Task.Run(() => PreviewLoopAsync(
             provider, sourceRegion, captureRegion, outputWidth, outputHeight,
-            targetFps, zoom, trackMouse, trackCaret, trackAutomatic, token));
+            targetFps, trackMouse, trackCaret, trackAutomatic, token));
     }
 
     private async Task PreviewLoopAsync(
         IFrameCaptureProvider provider, Rect sourceRegion, Rect fixedCaptureRegion,
-        int outputWidth, int outputHeight, int targetFps, double zoom,
+        int outputWidth, int outputHeight, int targetFps,
         bool trackMouse, bool trackCaret, bool trackAutomatic, CancellationToken token)
     {
         TimeSpan interval = TimeSpan.FromMilliseconds(1000.0 / targetFps);
@@ -247,7 +262,7 @@ public partial class MainWindow : Window
                 caretWasFound = tracking.CaretFound;
 
                 Rect captureRegion = trackMouse || trackCaret || trackAutomatic
-                    ? ScreenGeometry.CalculateCrop(sourceRegion, outputWidth, outputHeight, zoom, trackingPoint)
+                    ? ScreenGeometry.CalculateCrop(sourceRegion, outputWidth, outputHeight, trackingPoint)
                     : fixedCaptureRegion;
 
                 BitmapSource? frame = await provider.CaptureAsync(captureRegion, token);
