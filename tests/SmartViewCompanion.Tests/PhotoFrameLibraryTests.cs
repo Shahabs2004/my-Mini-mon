@@ -1,4 +1,5 @@
 using SmartViewCompanion.Core;
+using Xunit;
 
 namespace SmartViewCompanion.Tests;
 
