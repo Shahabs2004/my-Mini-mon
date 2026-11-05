@@ -7,9 +7,15 @@ A Windows companion application for a future USB-powered auxiliary display. The 
 See [doc/PROJECT_ROADMAP.md](doc/PROJECT_ROADMAP.md) for the full feature checklist, milestone status, known limitations, and development order.
 
 
-**Prototype 0.8 / early development.** The app includes a GDI BitBlt capture provider, live preview, drag-to-select fixed capture rectangle, mouse-pointer tracking, basic Win32 text-caret tracking, and a simple automatic mode (caret-first with mouse fallback). Caret tracking uses the foreground GUI thread's `GetGUIThreadInfo` caret rectangle and converts it to desktop coordinates. It works only when the target application exposes a standard Win32 caret; some applications (including some custom-rendered editors, browsers, and elevated apps) may not expose usable caret information. When no caret is found, the preview remains at the last known position (or the primary-screen center before the first successful detection).
+**Prototype 0.9 / early development.** The app includes a GDI BitBlt capture provider, live preview, drag-to-select fixed capture rectangle, mouse-pointer tracking, basic Win32 text-caret tracking, and a simple automatic mode (caret-first with mouse fallback). Caret tracking uses the foreground GUI thread's `GetGUIThreadInfo` caret rectangle and converts it to desktop coordinates. It works only when the target application exposes a standard Win32 caret; some applications (including some custom-rendered editors, browsers, and elevated apps) may not expose usable caret information. When no caret is found, the preview remains at the last known position (or the primary-screen center before the first successful detection).
 
 Automatic capture currently selects GDI BitBlt because it is the only implemented backend. A Win32 monitor selector now offers individual physical monitors and a combined Virtual desktop (all monitors) source. Selecting the virtual desktop allows the tracking crop to follow a mouse pointer or supported Win32 caret across monitor coordinates. The captured rectangle is the bounding rectangle of all displays, so gaps between monitors may appear blank. Windows Graphics Capture, DXGI Desktop Duplication, mixed-DPI normalization/validation, and UI Automation caret fallback are not implemented yet.
+
+## Idle Photo Frame
+
+The prototype includes a separate Photo Frame window for an idle-time slideshow. Add multiple image files or one or more folders (searched recursively), choose the inactivity delay and slide duration, and select Fit or Fill scaling. The slideshow pauses as soon as system keyboard/mouse activity resumes. The source list and preferences are stored under `%LocalAppData%\\SmartViewCompanion\\photo-frame.json`.
+
+This first version is a standalone simulator window; it is not yet routed through the same frame-composition/output pipeline as desktop capture, and it does not send images to physical USB hardware.
 
 ## Goals
 
