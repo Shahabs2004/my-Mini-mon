@@ -1,3 +1,8 @@
+### 2026-11-05 — Fix missing System.IO import in photo-frame tests
+- Added an explicit `using System.IO;` to `PhotoFrameLibraryTests.cs` for `Path`, `Directory`, and `File`.
+- The application project compiled successfully in the user's latest local build; the test project still failed at compile time due to this missing import.
+- Fix committed to `main`; full solution build and test execution remain unverified pending the next local run.
+
 ### 2026-11-05 — Fix test-project xUnit import and duplicate using warning
 - Added the explicit `using Xunit;` directive to `PhotoFrameLibraryTests.cs`, resolving the reported `FactAttribute` / `Fact` compile errors.
 - Removed the duplicate `using System.Windows.Media;` directive from `RegionSelectionWindow.xaml.cs`.
