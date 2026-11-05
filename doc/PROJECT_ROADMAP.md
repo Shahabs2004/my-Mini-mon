@@ -1,4 +1,11 @@
 ### 2026-11-05 — Make dynamic tracking start with a close-up crop
+
+### 2026-11-05 — Hardware procurement research started
+- Software milestone accepted by the user. Cross-application caret tracking remains a known limitation because some applications do not expose standard Win32 caret coordinates; retain this as a known issue rather than blocking hardware work.
+- Began hardware selection for a USB-powered custom display peripheral. ESP32-P4 is the leading MCU candidate because its datasheet documents USB 2.0 High-Speed OTG (480 Mbit/s) and LCD/parallel display peripherals. Local stock for the identified JC-ESP32P4-M3 module was listed as unavailable at the checked Iranian seller; verify stock before purchase.
+- Initial panel candidate: 3.5-inch IPS, 320×480 with parallel interface (avoid SPI-only modules for the target live-frame rate unless throughput is measured). Confirm exact panel pinout, controller, timing, and backlight requirements before ordering.
+- No hardware purchased yet; procurement remains subject to user approval of size and budget.
+
 - Root cause identified: dynamic tracking uses the entire selected monitor as its source region, while the Zoom slider defaulted to 1×. At 1×, the crop therefore spans almost the whole monitor (subject only to output aspect-ratio trimming); pointer/caret tracking moves the crop center but does not create a close-up.
 - Changed the default zoom to 3× and clarified that 1× is the widest/near-full-monitor view. Users can choose 4× for a tighter crop.
 - This is a UI default adjustment, not proof of runtime pointer/caret accuracy. Rebuild and test on Windows, then verify Mouse and Automatic modes by moving the pointer with Zoom at 3× or 4×.
