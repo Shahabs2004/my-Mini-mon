@@ -1,6 +1,8 @@
+[![Windows Build and Test](https://github.com/Shahabs2004/my-Mini-mon/actions/workflows/build.yml/badge.svg)](https://github.com/Shahabs2004/my-Mini-mon/actions/workflows/build.yml)
+
 ## Continuous integration
 
-GitHub Actions runs on every push to `main`, pull request targeting `main`, or manual dispatch. The Windows runner restores the solution, builds the full solution in Release configuration, and then runs the automated tests. On success, the compiled application output is uploaded as the `SmartViewCompanion-windows-net8` artifact; test results are uploaded separately when available. Open the repository's **Actions** tab to inspect compiler errors and download artifacts.
+GitHub Actions runs on every push to `main`, pull request targeting `main`, or manual dispatch. The Windows runner restores the solution, builds the full solution in Release configuration, and then runs the automated tests. On success, the compiled application output is uploaded as the `SmartViewCompanion-windows-net8` artifact; test results are uploaded separately when available. Open the repository's **Actions** tab to inspect compiler errors and download artifacts. See [branch protection setup](doc/GITHUB_BRANCH_PROTECTION.md) to require this check before merging.
 
 # SmartView Companion
 
